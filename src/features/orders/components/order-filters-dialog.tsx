@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Check } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -25,6 +26,23 @@ import type { OrderFilters } from "../types";
 
 const ALL = "todos";
 
+type FilterType =
+  | "date"
+  | "status"
+  | "payment"
+  | "dealer"
+  | "customer"
+  | "refunds";
+
+const FILTER_TYPES: { value: FilterType; label: string }[] = [
+  { value: "date", label: "Rango de fecha" },
+  { value: "status", label: "Estado de entrega" },
+  { value: "payment", label: "Estado de pago" },
+  { value: "dealer", label: "Repartidor" },
+  { value: "customer", label: "Cliente" },
+  { value: "refunds", label: "¿Hubo devoluciones?" },
+];
+
 export function OrderFiltersDialog({
   open,
   onOpenChange,
@@ -39,12 +57,15 @@ export function OrderFiltersDialog({
   const { data: dealers } = useDealers();
   const { data: customers } = useCustomers();
 
+  const [filterType, setFilterType] = useState<FilterType>("date");
+
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [status, setStatus] = useState(ALL);
   const [payment, setPayment] = useState(ALL);
   const [dealer, setDealer] = useState(ALL);
   const [customer, setCustomer] = useState(ALL);
+  const [refunds, setRefunds] = useState(ALL);
 
   useEffect(() => {
     if (open) {
@@ -54,6 +75,7 @@ export function OrderFiltersDialog({
       setPayment(filters.paymentStatus ?? ALL);
       setDealer(filters.dealer ?? ALL);
       setCustomer(filters.customerId != null ? String(filters.customerId) : ALL);
+      setRefunds(filters.hasRefunds == null ? ALL : filters.hasRefunds ? "si" : "no");
     }
   }, [open, filters]);
 
@@ -65,6 +87,7 @@ export function OrderFiltersDialog({
       paymentStatus: payment === ALL ? undefined : payment,
       dealer: dealer === ALL ? undefined : dealer,
       customerId: customer === ALL ? undefined : Number(customer),
+      hasRefunds: refunds === ALL ? undefined : refunds === "si",
     });
     onOpenChange(false);
   };
@@ -74,86 +97,152 @@ export function OrderFiltersDialog({
     onOpenChange(false);
   };
 
+  // Un filtro está activo si tiene un valor distinto de "todos"
+  // (la fecha se evalúa por si tiene desde/hasta)
+  const activeMap: Record<FilterType, boolean> = {
+    date: Boolean(dateFrom || dateTo),
+    status: status !== ALL,
+    payment: payment !== ALL,
+    dealer: dealer !== ALL,
+    customer: customer !== ALL,
+    refunds: refunds !== ALL,
+  };
+  const activeCount = Object.values(activeMap).filter(Boolean).length;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-3xl">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Filtrar pedidos</DialogTitle>
         </DialogHeader>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2 sm:col-span-2">
-            <Label>Rango de fecha (creación)</Label>
-            <div className="flex items-center gap-2">
-              <DatePicker
-                value={dateFrom}
-                onChange={(v) => setDateFrom(v ?? "")}
-                placeholder="Desde"
-              />
-              <span className="text-sm text-muted-foreground">a</span>
-              <DatePicker
-                value={dateTo}
-                onChange={(v) => setDateTo(v ?? "")}
-                placeholder="Hasta"
-              />
+        <div className="space-y-4">
+          {/* Selector del tipo de filtro */}
+          <div className="space-y-2">
+            <Label>
+              Tipo de filtro
+              {activeCount > 0 ? (
+                <span className="ml-2 font-normal text-muted-foreground">
+                  · {activeCount} activo{activeCount === 1 ? "" : "s"}
+                </span>
+              ) : null}
+            </Label>
+            <Select value={filterType} onValueChange={(v) => setFilterType(v as FilterType)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {FILTER_TYPES.map((type) => (
+                  <SelectItem key={type.value} value={type.value}>
+                    <span className="flex items-center gap-2">
+                      {type.label}
+                      {activeMap[type.value] ? (
+                        <Check className="h-3.5 w-3.5 text-green-600" />
+                      ) : null}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Control según el tipo seleccionado */}
+          {filterType === "date" ? (
+            <div className="space-y-2">
+              <Label>Rango de fecha (creación)</Label>
+              <div className="flex items-center gap-2">
+                <DatePicker
+                  value={dateFrom}
+                  onChange={(v) => setDateFrom(v ?? "")}
+                  placeholder="Desde"
+                />
+                <span className="text-sm text-muted-foreground">a</span>
+                <DatePicker
+                  value={dateTo}
+                  onChange={(v) => setDateTo(v ?? "")}
+                  placeholder="Hasta"
+                />
+              </div>
             </div>
-          </div>
+          ) : null}
 
-          <div className="space-y-2">
-            <Label>Estado de entrega</Label>
-            <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value={ALL}>Todos</SelectItem>
-                <SelectItem value="pendiente">Pendiente</SelectItem>
-                <SelectItem value="completado">Completado</SelectItem>
-                <SelectItem value="cancelado">Cancelado</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {filterType === "status" ? (
+            <div className="space-y-2">
+              <Label>Estado de entrega</Label>
+              <Select value={status} onValueChange={setStatus}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL}>Todos</SelectItem>
+                  <SelectItem value="pendiente">Pendiente</SelectItem>
+                  <SelectItem value="completado">Completado</SelectItem>
+                  <SelectItem value="cancelado">Cancelado</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          ) : null}
 
-          <div className="space-y-2">
-            <Label>Estado de pago</Label>
-            <Select value={payment} onValueChange={setPayment}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value={ALL}>Todos</SelectItem>
-                <SelectItem value="Sin Pagar">Sin Pagar</SelectItem>
-                <SelectItem value="Parcialmente Pagado">Parcialmente Pagado</SelectItem>
-                <SelectItem value="Pagado">Pagado</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {filterType === "payment" ? (
+            <div className="space-y-2">
+              <Label>Estado de pago</Label>
+              <Select value={payment} onValueChange={setPayment}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL}>Todos</SelectItem>
+                  <SelectItem value="Sin Pagar">Sin Pagar</SelectItem>
+                  <SelectItem value="Parcialmente Pagado">Parcialmente Pagado</SelectItem>
+                  <SelectItem value="Pagado">Pagado</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          ) : null}
 
-          <div className="space-y-2">
-            <Label>Repartidor</Label>
-            <Select value={dealer} onValueChange={setDealer}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value={ALL}>Todos</SelectItem>
-                {dealers?.map((d) => (
-                  <SelectItem key={d.id} value={d.username}>
-                    {d.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {filterType === "dealer" ? (
+            <div className="space-y-2">
+              <Label>Repartidor</Label>
+              <Select value={dealer} onValueChange={setDealer}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL}>Todos</SelectItem>
+                  {dealers?.map((d) => (
+                    <SelectItem key={d.id} value={d.username}>
+                      {d.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          ) : null}
 
-          <div className="space-y-2">
-            <Label>Cliente</Label>
-            <Select value={customer} onValueChange={setCustomer}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value={ALL}>Todos</SelectItem>
-                {customers?.map((c) => (
-                  <SelectItem key={c.id} value={String(c.id)}>
-                    {c.customer_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {filterType === "customer" ? (
+            <div className="space-y-2">
+              <Label>Cliente</Label>
+              <Select value={customer} onValueChange={setCustomer}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL}>Todos</SelectItem>
+                  {customers?.map((c) => (
+                    <SelectItem key={c.id} value={String(c.id)}>
+                      {c.customer_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          ) : null}
+
+          {filterType === "refunds" ? (
+            <div className="space-y-2">
+              <Label>¿Hubo devoluciones?</Label>
+              <Select value={refunds} onValueChange={setRefunds}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL}>Todos</SelectItem>
+                  <SelectItem value="si">Con devoluciones</SelectItem>
+                  <SelectItem value="no">Sin devoluciones</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          ) : null}
         </div>
 
         <DialogFooter>

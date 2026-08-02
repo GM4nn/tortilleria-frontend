@@ -38,13 +38,13 @@ export function OrderDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>Pedido #{order?.id}</DialogTitle>
         </DialogHeader>
 
         {order ? (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {/* Fechas */}
             <div>
               <p className="text-xs text-muted-foreground">
@@ -57,58 +57,85 @@ export function OrderDetailDialog({
               ) : null}
             </div>
 
-            <hr className="border-t" />
+            <div className="grid gap-4 sm:grid-cols-2">
+              {/* IZQUIERDA: datos */}
+              <div className="space-y-1.5 text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="w-28 shrink-0 font-semibold">Cliente:</span>
+                  <span>{customerName || "—"}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-28 shrink-0 font-semibold">Repartidor:</span>
+                  <span>{order.default_dealer ?? "Sin asignar"}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-28 shrink-0 font-semibold">Entrega:</span>
+                  {statusBadge(order.status)}
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-28 shrink-0 font-semibold">Pago:</span>
+                  {paymentBadge(order.payment_status)}
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-28 shrink-0 font-semibold">Pagado:</span>
+                  <span className={fullyPaid ? "text-green-600" : "text-destructive"}>
+                    {formatCurrency(order.amount_paid)} / {formatCurrency(order.total)}
+                  </span>
+                </div>
+              </div>
 
-            {/* Datos */}
-            <div className="space-y-1.5 text-sm">
-              <div className="flex items-center gap-2">
-                <span className="w-28 shrink-0 font-semibold">Cliente:</span>
-                <span>{customerName || "—"}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-28 shrink-0 font-semibold">Repartidor:</span>
-                <span>{order.default_dealer ?? "Sin asignar"}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-28 shrink-0 font-semibold">Entrega:</span>
-                {statusBadge(order.status)}
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-28 shrink-0 font-semibold">Pago:</span>
-                {paymentBadge(order.payment_status)}
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-28 shrink-0 font-semibold">Pagado:</span>
-                <span className={fullyPaid ? "text-green-600" : "text-destructive"}>
-                  {formatCurrency(order.amount_paid)} / {formatCurrency(order.total)}
-                </span>
-              </div>
-            </div>
-
-            <hr className="border-t" />
-
-            {/* Productos */}
-            <div>
-              <p className="mb-2 font-semibold">Productos:</p>
-              <div className="space-y-2">
-                {order.details.map((detail) => (
-                  <div
-                    key={detail.product_id}
-                    className="flex items-center justify-between gap-2 rounded-md border p-2"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium leading-tight">
-                        {detail.product_name}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        x{detail.quantity} @ {formatCurrency(detail.unit_price)}
-                      </p>
-                    </div>
-                    <span className="font-medium text-green-600">
-                      {formatCurrency(detail.subtotal)}
-                    </span>
+              {/* DERECHA: productos y devoluciones */}
+              <div className="space-y-3">
+                <div>
+                  <p className="mb-2 font-semibold">Productos:</p>
+                  <div className="space-y-2">
+                    {order.details.map((detail) => (
+                      <div
+                        key={detail.product_id}
+                        className="flex items-center justify-between gap-2 rounded-md border p-2"
+                      >
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium leading-tight">
+                            {detail.product_name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            x{detail.quantity} @ {formatCurrency(detail.unit_price)}
+                          </p>
+                        </div>
+                        <span className="font-medium text-green-600">
+                          {formatCurrency(detail.subtotal)}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                </div>
+
+                {/* Devoluciones (pérdidas) */}
+                {(order.refunds?.length ?? 0) > 0 ? (
+                  <div>
+                    <p className="mb-2 font-semibold text-amber-600">Devoluciones:</p>
+                    <div className="space-y-2">
+                      {order.refunds?.map((refund, index) => (
+                        <div
+                          key={`${refund.product_id}-${index}`}
+                          className="flex items-start justify-between gap-2 rounded-md border border-amber-300 bg-amber-50 p-2"
+                        >
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium leading-tight">
+                              {refund.product_name}
+                            </p>
+                            {refund.comments ? (
+                              <p className="text-xs text-muted-foreground">{refund.comments}</p>
+                            ) : null}
+                          </div>
+                          <span className="whitespace-nowrap font-medium text-amber-700">
+                            -{refund.quantity}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
               </div>
             </div>
 

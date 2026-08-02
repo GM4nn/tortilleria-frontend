@@ -6,6 +6,14 @@ export interface OrderDetail {
   subtotal: number;
 }
 
+export interface OrderRefund {
+  product_id: number;
+  product_name: string;
+  quantity: number;
+  comments: string | null;
+  created_at: string | null;
+}
+
 export interface Order {
   id: number;
   date: string | null;
@@ -18,6 +26,7 @@ export interface Order {
   payment_status: string;
   default_dealer: string | null;
   details: OrderDetail[];
+  refunds?: OrderRefund[];
 }
 
 export interface OrderItemInput {
@@ -52,6 +61,7 @@ export interface OrderFilters {
   paymentStatus?: string;
   dealer?: string;
   customerId?: number;
+  hasRefunds?: boolean;
 }
 
 export interface Pagination {

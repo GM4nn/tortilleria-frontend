@@ -157,6 +157,13 @@ export function OrdersView() {
       onRemove: () => removeKeys(["customerId"]),
     });
   }
+  if (filters.hasRefunds != null) {
+    badges.push({
+      key: "hasRefunds",
+      label: `Devoluciones: ${filters.hasRefunds ? "Con" : "Sin"}`,
+      onRemove: () => removeKeys(["hasRefunds"]),
+    });
+  }
 
   return (
     <>
@@ -208,6 +215,7 @@ export function OrdersView() {
               <TableHead>Pagado</TableHead>
               <TableHead>Entrega</TableHead>
               <TableHead>Pago</TableHead>
+              <TableHead>Devuelto</TableHead>
               <TableHead>Repartidor</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
@@ -215,19 +223,23 @@ export function OrdersView() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={8}>
+                <TableCell colSpan={9}>
                   <CenteredSpinner />
                 </TableCell>
               </TableRow>
             ) : !orders?.length ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center text-muted-foreground">
+                <TableCell colSpan={9} className="text-center text-muted-foreground">
                   No hay pedidos
                 </TableCell>
               </TableRow>
             ) : (
               orders.map((order) => {
                 const pending = order.status === "pendiente";
+                const returned = (order.refunds ?? []).reduce(
+                  (sum, refund) => sum + refund.quantity,
+                  0
+                );
                 return (
                   <TableRow key={order.id}>
                     <TableCell className="font-medium">#{order.id}</TableCell>
@@ -236,6 +248,13 @@ export function OrdersView() {
                     <TableCell>{formatCurrency(order.amount_paid)}</TableCell>
                     <TableCell>{statusBadge(order.status)}</TableCell>
                     <TableCell>{paymentBadge(order.payment_status)}</TableCell>
+                    <TableCell>
+                      {returned > 0 ? (
+                        <span className="font-medium text-amber-600">{returned}</span>
+                      ) : (
+                        "—"
+                      )}
+                    </TableCell>
                     <TableCell>{order.default_dealer ?? "—"}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">

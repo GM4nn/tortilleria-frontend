@@ -15,6 +15,7 @@ function buildQuery(filters: OrderFilters, offset: number, limit: number): strin
   if (filters.paymentStatus) params.set("payment_status", filters.paymentStatus);
   if (filters.dealer) params.set("dealer", filters.dealer);
   if (filters.customerId != null) params.set("customer_id", String(filters.customerId));
+  if (filters.hasRefunds != null) params.set("has_refunds", String(filters.hasRefunds));
   params.set("offset", String(offset));
   params.set("limit", String(limit));
   return `?${params.toString()}`;
