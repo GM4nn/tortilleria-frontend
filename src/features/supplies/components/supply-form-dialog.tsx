@@ -19,9 +19,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useMeta } from "@/features/meta/hooks";
 import { useSuppliers } from "@/features/suppliers/hooks";
-import { useSaveSupply } from "../hooks";
-import { SUPPLY_UNITS, type Supply } from "../types";
+import { useDeleteSupply, useSaveSupply } from "../hooks";
+import type { Supply } from "../types";
 
 export function SupplyFormDialog({
   open,
@@ -33,7 +34,16 @@ export function SupplyFormDialog({
   supply?: Supply | null;
 }) {
   const { data: suppliers } = useSuppliers();
+  const { data: meta } = useMeta();
   const save = useSaveSupply();
+  const remove = useDeleteSupply();
+
+  const handleDelete = () => {
+    if (!supply) return;
+    if (confirm(`¿Eliminar el insumo "${supply.supply_name}"?`)) {
+      remove.mutate(supply.id, { onSuccess: () => onOpenChange(false) });
+    }
+  };
 
   const [name, setName] = useState("");
   const [supplierId, setSupplierId] = useState("");
@@ -95,7 +105,7 @@ export function SupplyFormDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {SUPPLY_UNITS.map((u) => (
+                {(meta?.supply_units ?? []).map((u) => (
                   <SelectItem key={u} value={u}>
                     {u}
                   </SelectItem>
@@ -105,6 +115,17 @@ export function SupplyFormDialog({
           </div>
 
           <DialogFooter>
+            {supply && !supply.is_default ? (
+              <Button
+                type="button"
+                variant="destructive"
+                className="sm:mr-auto"
+                onClick={handleDelete}
+                disabled={remove.isPending}
+              >
+                Eliminar
+              </Button>
+            ) : null}
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>

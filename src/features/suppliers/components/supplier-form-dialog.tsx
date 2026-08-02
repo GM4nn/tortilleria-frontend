@@ -12,6 +12,14 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useMeta } from "@/features/meta/hooks";
 import { useSaveSupplier } from "../hooks";
 import type { Supplier } from "../types";
 
@@ -34,6 +42,7 @@ export function SupplierFormDialog({
 }) {
   const [form, setForm] = useState(EMPTY);
   const save = useSaveSupplier();
+  const { data: meta } = useMeta();
 
   useEffect(() => {
     if (open) {
@@ -93,12 +102,22 @@ export function SupplierFormDialog({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="product_type">Tipo de producto</Label>
-            <Input
-              id="product_type"
+            <Label>Tipo de producto</Label>
+            <Select
               value={form.product_type}
-              onChange={(e) => setForm({ ...form, product_type: e.target.value })}
-            />
+              onValueChange={(v) => setForm({ ...form, product_type: v })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecciona tipo" />
+              </SelectTrigger>
+              <SelectContent>
+                {(meta?.supplier_product_types ?? []).map((t) => (
+                  <SelectItem key={t} value={t}>
+                    {t}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="city">Ciudad</Label>

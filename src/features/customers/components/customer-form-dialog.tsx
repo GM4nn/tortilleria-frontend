@@ -12,6 +12,14 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { CUSTOMER_CATEGORY_MOSTRADOR, useMeta } from "@/features/meta/hooks";
 import { useSaveCustomer } from "../hooks";
 import type { Customer } from "../types";
 
@@ -33,6 +41,10 @@ export function CustomerFormDialog({
 }) {
   const [form, setForm] = useState(EMPTY);
   const save = useSaveCustomer();
+  const { data: meta } = useMeta();
+  const categories = (meta?.customer_categories ?? []).filter(
+    (c) => c !== CUSTOMER_CATEGORY_MOSTRADOR
+  );
 
   useEffect(() => {
     if (open) {
@@ -91,12 +103,22 @@ export function CustomerFormDialog({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="customer_category">Categoría</Label>
-            <Input
-              id="customer_category"
+            <Label>Categoría</Label>
+            <Select
               value={form.customer_category}
-              onChange={(e) => setForm({ ...form, customer_category: e.target.value })}
-            />
+              onValueChange={(v) => setForm({ ...form, customer_category: v })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecciona categoría" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {c}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <DialogFooter>

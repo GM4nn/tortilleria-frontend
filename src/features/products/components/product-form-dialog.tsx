@@ -12,6 +12,14 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useMeta } from "@/features/meta/hooks";
 import { useSaveProduct } from "../hooks";
 import type { Product } from "../types";
 
@@ -28,6 +36,7 @@ export function ProductFormDialog({
 }) {
   const [form, setForm] = useState(EMPTY);
   const save = useSaveProduct();
+  const { data: meta } = useMeta();
 
   useEffect(() => {
     if (open) {
@@ -59,14 +68,23 @@ export function ProductFormDialog({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex gap-3">
-            <div className="w-20 space-y-2">
-              <Label htmlFor="icon">Icono</Label>
-              <Input
-                id="icon"
+            <div className="w-24 space-y-2">
+              <Label>Icono</Label>
+              <Select
                 value={form.icon}
-                onChange={(e) => setForm({ ...form, icon: e.target.value })}
-                className="text-center text-lg"
-              />
+                onValueChange={(v) => setForm({ ...form, icon: v })}
+              >
+                <SelectTrigger className="text-lg">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {(meta?.product_icons ?? []).map((icon) => (
+                    <SelectItem key={icon} value={icon} className="text-lg">
+                      {icon}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="flex-1 space-y-2">
               <Label htmlFor="name">Nombre</Label>

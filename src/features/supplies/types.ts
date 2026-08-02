@@ -36,13 +36,3 @@ export interface SupplyPurchaseInput {
   purchase_date?: string | null;
   notes?: string | null;
 }
-
-export const SUPPLY_UNITS = [
-  "kilos",
-  "litros",
-  "piezas",
-  "costales",
-  "bultos",
-  "cajas",
-  "servicio",
-] as const;

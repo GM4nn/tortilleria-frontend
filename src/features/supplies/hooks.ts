@@ -17,6 +17,13 @@ export function useSupplies() {
   return useQuery({ queryKey: QUERY_KEY, queryFn: suppliesApi.list });
 }
 
+export function useSupply(supplyId: number) {
+  return useQuery({
+    queryKey: [...QUERY_KEY, supplyId],
+    queryFn: () => suppliesApi.get(supplyId),
+  });
+}
+
 export function useSaveSupply() {
   const queryClient = useQueryClient();
   return useMutation({
