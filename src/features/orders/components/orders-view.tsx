@@ -3,13 +3,13 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
+  ArrowLeft,
   Ban,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
   Eye,
   Filter,
-  Plus,
   Wallet,
   X,
 } from "lucide-react";
@@ -162,15 +162,15 @@ export function OrdersView() {
     <>
       <PageHeader
         title="Pedidos"
-        description="Administra los pedidos: cobra, completa o cancela"
+        description="Historial de pedidos"
         action={
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setFiltersOpen(true)}>
               <Filter /> Filtros
             </Button>
-            <Button asChild>
-              <Link href="/orders/new">
-                <Plus /> Nuevo pedido
+            <Button asChild variant="outline">
+              <Link href="/orders">
+                <ArrowLeft /> Volver
               </Link>
             </Button>
           </div>

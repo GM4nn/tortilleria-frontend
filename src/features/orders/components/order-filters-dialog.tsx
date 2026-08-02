@@ -76,13 +76,13 @@ export function OrderFiltersDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>Filtrar pedidos</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <div className="space-y-2">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2 sm:col-span-2">
             <Label>Rango de fecha (creación)</Label>
             <div className="flex items-center gap-2">
               <DatePicker

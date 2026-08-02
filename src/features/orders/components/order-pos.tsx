@@ -118,13 +118,21 @@ export function OrderPos() {
           unit_price: item.unit_price,
         })),
       },
-      { onSuccess: () => router.push("/orders") }
+      { onSuccess: () => router.push("/orders/historial") }
     );
   };
 
   return (
     <>
-      <PageHeader title="Nuevo pedido" description="Sigue los pasos para armar el pedido" />
+      <PageHeader
+        title="Nuevo pedido"
+        description="Sigue los pasos para armar el pedido"
+        action={
+          <Button variant="outline" onClick={() => router.push("/orders")}>
+            <ArrowLeft /> Volver
+          </Button>
+        }
+      />
 
       <PosStepper steps={STEPS} current={step} onSelect={(index) => setStep(index)} />
 
