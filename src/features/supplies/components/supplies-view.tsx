@@ -106,7 +106,7 @@ export function SuppliesView() {
                 <p className="mt-3 text-sm">
                   <span className="text-muted-foreground">Proveedor: </span>
                   <span className="font-medium">
-                    {supplierName.get(supply.supplier_id) ?? "—"}
+                    {supplierName.get(supply.supplier_id ?? -1) ?? "—"}
                   </span>
                 </p>
 

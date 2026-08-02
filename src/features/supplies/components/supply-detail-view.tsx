@@ -93,7 +93,7 @@ export function SupplyDetailView({ supplyId }: { supplyId: number }) {
         title={supply?.supply_name ?? "Insumo"}
         description={
           supply
-            ? `${supplierName.get(supply.supplier_id) ?? "—"} · ${supply.unit}`
+            ? `${supplierName.get(supply.supplier_id ?? -1) ?? "—"} · ${supply.unit}`
             : undefined
         }
         action={

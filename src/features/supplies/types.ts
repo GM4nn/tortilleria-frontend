@@ -1,14 +1,14 @@
 export interface Supply {
   id: number;
   supply_name: string;
-  supplier_id: number;
+  supplier_id: number | null;
   unit: string;
   is_default: boolean;
 }
 
 export interface SupplyInput {
   supply_name: string;
-  supplier_id: number;
+  supplier_id: number | null;
   unit: string;
 }
 

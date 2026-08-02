@@ -48,7 +48,7 @@ export function AddPurchaseDialog({
 
   useEffect(() => {
     if (open && supply) {
-      setSupplierId(String(supply.supplier_id));
+      setSupplierId(supply.supplier_id ? String(supply.supplier_id) : "");
       setDate("");
       setQuantity("");
       setUnitPrice("");
@@ -59,10 +59,10 @@ export function AddPurchaseDialog({
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    if (!supply) return;
+    if (!supply || !supplierId) return;
     add.mutate(
       {
-        supplier_id: Number(supplierId) || supply.supplier_id,
+        supplier_id: Number(supplierId),
         quantity: Number(quantity) || 0,
         unit: supply.unit,
         unit_price: Number(unitPrice) || 0,
@@ -138,7 +138,7 @@ export function AddPurchaseDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={add.isPending}>
+            <Button type="submit" disabled={add.isPending || !supplierId}>
               {add.isPending ? "Guardando..." : "Registrar compra"}
             </Button>
           </DialogFooter>

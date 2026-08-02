@@ -52,16 +52,22 @@ export function SupplyFormDialog({
   useEffect(() => {
     if (open) {
       setName(supply?.supply_name ?? "");
-      setSupplierId(supply ? String(supply.supplier_id) : "");
+      setSupplierId(supply?.supplier_id ? String(supply.supplier_id) : "");
       setUnit(supply?.unit ?? "kilos");
     }
   }, [open, supply]);
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    if (!supplierId) return;
     save.mutate(
-      { id: supply?.id, data: { supply_name: name, supplier_id: Number(supplierId), unit } },
+      {
+        id: supply?.id,
+        data: {
+          supply_name: name,
+          supplier_id: supplierId ? Number(supplierId) : null,
+          unit,
+        },
+      },
       { onSuccess: () => onOpenChange(false) }
     );
   };
@@ -84,12 +90,16 @@ export function SupplyFormDialog({
             />
           </div>
           <div className="space-y-2">
-            <Label>Proveedor</Label>
-            <Select value={supplierId} onValueChange={setSupplierId}>
+            <Label>Proveedor (opcional)</Label>
+            <Select
+              value={supplierId || "none"}
+              onValueChange={(v) => setSupplierId(v === "none" ? "" : v)}
+            >
               <SelectTrigger>
-                <SelectValue placeholder="Selecciona un proveedor" />
+                <SelectValue placeholder="Sin proveedor" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="none">Sin proveedor</SelectItem>
                 {suppliers?.map((supplier) => (
                   <SelectItem key={supplier.id} value={String(supplier.id)}>
                     {supplier.supplier_name}
@@ -129,7 +139,7 @@ export function SupplyFormDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={save.isPending || !supplierId}>
+            <Button type="submit" disabled={save.isPending}>
               {save.isPending ? "Guardando..." : "Guardar"}
             </Button>
           </DialogFooter>
