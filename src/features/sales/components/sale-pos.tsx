@@ -3,32 +3,21 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
-import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/layout/page-header";
 import { formatCurrency } from "@/lib/utils";
-import { useCustomers } from "@/features/customers/hooks";
 import { useProducts } from "@/features/products/hooks";
 import { useCreateSale } from "../hooks";
 
 export function SalePos() {
   const { data: products } = useProducts();
-  const { data: customers } = useCustomers();
   const createSale = useCreateSale();
 
   // product_id -> cantidad
   const [quantities, setQuantities] = useState<Record<number, number>>({});
-
-  const mostrador = useMemo(
-    () =>
-      customers?.find(
-        (c) => (c.customer_category ?? "").toLowerCase() === "mostrador"
-      ) ?? null,
-    [customers]
-  );
 
   const cartItems = useMemo(
     () => (products ?? []).filter((p) => (quantities[p.id] ?? 0) > 0),
@@ -52,13 +41,8 @@ export function SalePos() {
   const clear = () => setQuantities({});
 
   const cobrar = () => {
-    if (!mostrador) {
-      toast.error("No existe el cliente Mostrador");
-      return;
-    }
     createSale.mutate(
       {
-        customer_id: mostrador.id,
         items: cartItems.map((p) => ({
           product_id: p.id,
           quantity: quantities[p.id],
@@ -69,7 +53,7 @@ export function SalePos() {
     );
   };
 
-  const canCobrar = cartItems.length > 0 && !!mostrador && !createSale.isPending;
+  const canCobrar = cartItems.length > 0 && !createSale.isPending;
 
   return (
     <>

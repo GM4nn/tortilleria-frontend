@@ -21,7 +21,7 @@ export interface SaleItemInput {
 }
 
 export interface SaleCreate {
-  customer_id: number;
+  customer_id?: number; // opcional: si no se envía, el backend usa el Cliente Mostrador
   items: SaleItemInput[];
 }
 
