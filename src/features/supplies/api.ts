@@ -10,4 +10,6 @@ export const suppliesApi = {
   purchases: (id: number) => api.get<SupplyPurchase[]>(`/supplies/${id}/purchases`),
   addPurchase: (id: number, data: SupplyPurchaseInput) =>
     api.post<SupplyPurchase>(`/supplies/${id}/purchases`, data),
+  updatePurchase: (id: number, purchaseId: number, data: SupplyPurchaseInput) =>
+    api.put<SupplyPurchase>(`/supplies/${id}/purchases/${purchaseId}`, data),
 };

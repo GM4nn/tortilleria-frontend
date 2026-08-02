@@ -23,3 +23,12 @@ export function formatDate(value?: string | null): string {
     timeStyle: "short",
   }).format(date);
 }
+
+export function formatDateShort(value?: string | null): string {
+  if (!value) return "—";
+  // "YYYY-MM-DD" se parsea como local para evitar corrimiento de día
+  const raw = value.length === 10 ? `${value}T00:00:00` : value;
+  const date = new Date(raw);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("es-MX", { dateStyle: "medium" }).format(date);
+}

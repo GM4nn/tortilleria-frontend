@@ -68,3 +68,16 @@ export function useAddPurchase(supplyId: number) {
     onError: (error) => toast.error(errorMessage(error, "Error al registrar la compra")),
   });
 }
+
+export function useUpdatePurchase(supplyId: number) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ purchaseId, data }: { purchaseId: number; data: SupplyPurchaseInput }) =>
+      suppliesApi.updatePurchase(supplyId, purchaseId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [...QUERY_KEY, supplyId, "purchases"] });
+      toast.success("Compra actualizada");
+    },
+    onError: (error) => toast.error(errorMessage(error, "Error al actualizar la compra")),
+  });
+}

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft, Pencil, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/table";
 import { PageHeader } from "@/components/layout/page-header";
 import { CenteredSpinner } from "@/components/ui/spinner";
-import { cn, formatCurrency, formatDate } from "@/lib/utils";
+import { cn, formatCurrency, formatDateShort } from "@/lib/utils";
 import { useSuppliers } from "@/features/suppliers/hooks";
 import { usePurchases, useSupply } from "../hooks";
 import type { SupplyPurchase } from "../types";
@@ -69,6 +69,7 @@ export function SupplyDetailView({ supplyId }: { supplyId: number }) {
 
   const [tab, setTab] = useState<"historial" | "periodos">("historial");
   const [addOpen, setAddOpen] = useState(false);
+  const [editingPurchase, setEditingPurchase] = useState<SupplyPurchase | null>(null);
 
   const supplierName = useMemo(() => {
     const map = new Map<number, string>();
@@ -79,11 +80,11 @@ export function SupplyDetailView({ supplyId }: { supplyId: number }) {
   const periods = useMemo(() => computePeriods(purchases ?? []), [purchases]);
   const current = periods[0] ?? null;
 
-  const inventory = useMemo(() => {
+  const lastPurchase = useMemo(() => {
     const asc = [...(purchases ?? [])].sort((a, b) => keyDate(a).localeCompare(keyDate(b)));
-    const last = asc[asc.length - 1];
-    return last ? last.remaining + last.quantity : 0;
+    return asc[asc.length - 1] ?? null;
   }, [purchases]);
+  const inventory = lastPurchase ? lastPurchase.remaining + lastPurchase.quantity : 0;
 
   const unit = supply?.unit ?? "";
 
@@ -103,7 +104,12 @@ export function SupplyDetailView({ supplyId }: { supplyId: number }) {
                 <ArrowLeft /> Volver
               </Link>
             </Button>
-            <Button onClick={() => setAddOpen(true)}>
+            <Button
+              onClick={() => {
+                setEditingPurchase(null);
+                setAddOpen(true);
+              }}
+            >
               <Plus /> Registrar compra
             </Button>
           </div>
@@ -138,8 +144,8 @@ export function SupplyDetailView({ supplyId }: { supplyId: number }) {
                 <TableHead className="text-right">Cantidad</TableHead>
                 <TableHead className="text-right">Precio unit.</TableHead>
                 <TableHead className="text-right">Total</TableHead>
-                <TableHead className="text-right">Sobrante</TableHead>
                 <TableHead>Notas</TableHead>
+                <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -152,15 +158,28 @@ export function SupplyDetailView({ supplyId }: { supplyId: number }) {
               ) : (
                 purchases.map((p) => (
                   <TableRow key={p.id}>
-                    <TableCell>{formatDate(p.purchase_date)}</TableCell>
+                    <TableCell>{formatDateShort(p.purchase_date)}</TableCell>
                     <TableCell>{supplierName.get(p.supplier_id) ?? "—"}</TableCell>
                     <TableCell className="text-right">
                       {p.quantity} {p.unit}
                     </TableCell>
                     <TableCell className="text-right">{formatCurrency(p.unit_price)}</TableCell>
                     <TableCell className="text-right">{formatCurrency(p.total_price)}</TableCell>
-                    <TableCell className="text-right">{p.remaining}</TableCell>
                     <TableCell className="text-muted-foreground">{p.notes ?? "—"}</TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        title="Editar compra"
+                        onClick={() => {
+                          setEditingPurchase(p);
+                          setAddOpen(true);
+                        }}
+                      >
+                        <Pencil />
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))
               )}
@@ -173,12 +192,12 @@ export function SupplyDetailView({ supplyId }: { supplyId: number }) {
             <Card className="border-primary/40">
               <CardContent className="p-4">
                 <p className="mb-3 font-semibold text-primary">
-                  Resumen del período actual · {formatDate(current.from)} →{" "}
-                  {formatDate(current.to)}
+                  Resumen del período actual · {formatDateShort(current.from)} →{" "}
+                  {formatDateShort(current.to)}
                 </p>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
                   <div>
-                    <p className="text-xs text-muted-foreground">Disponible</p>
+                    <p className="text-xs text-muted-foreground">Disponible en el periodo</p>
                     <p className="text-lg font-bold">
                       {current.disponible.toFixed(2)} {unit}
                     </p>
@@ -191,22 +210,38 @@ export function SupplyDetailView({ supplyId }: { supplyId: number }) {
                     <p className="text-lg font-bold text-destructive">
                       {current.consumido.toFixed(2)} {unit}
                     </p>
+                    <p className="text-xs text-muted-foreground">
+                      Lo que se usó en el periodo
+                    </p>
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Restante</p>
                     <p className="text-lg font-bold text-emerald-600">
                       {current.restante.toFixed(2)} {unit}
                     </p>
+                    <p className="text-xs text-muted-foreground">
+                      Lo que sobró al final
+                    </p>
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">% Consumo</p>
                     <p className="text-lg font-bold">{current.pct.toFixed(1)}%</p>
+                    <p className="text-xs text-muted-foreground">
+                      Consumido ÷ disponible
+                    </p>
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground">Inventario disponible</p>
+                    <p className="text-xs text-muted-foreground">Inventario actual</p>
                     <p className="text-lg font-bold">
                       {inventory.toFixed(2)} {unit}
                     </p>
+                    {lastPurchase ? (
+                      <p className="text-xs text-muted-foreground">
+                        {lastPurchase.quantity} {unit} de la compra de{" "}
+                        {formatDateShort(lastPurchase.purchase_date)} + {lastPurchase.remaining}{" "}
+                        restante
+                      </p>
+                    ) : null}
                   </div>
                 </div>
                 <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
@@ -226,7 +261,7 @@ export function SupplyDetailView({ supplyId }: { supplyId: number }) {
                   <TableHead>Desde</TableHead>
                   <TableHead>Hasta</TableHead>
                   <TableHead className="text-right">Compra</TableHead>
-                  <TableHead className="text-right">Sobrante</TableHead>
+                  <TableHead className="text-right">Sobras del periodo anterior</TableHead>
                   <TableHead className="text-right">Disponible</TableHead>
                   <TableHead className="text-right">Consumido</TableHead>
                   <TableHead className="text-right">Restante</TableHead>
@@ -243,8 +278,8 @@ export function SupplyDetailView({ supplyId }: { supplyId: number }) {
                 ) : (
                   periods.map((p, index) => (
                     <TableRow key={index}>
-                      <TableCell>{formatDate(p.from)}</TableCell>
-                      <TableCell>{formatDate(p.to)}</TableCell>
+                      <TableCell>{formatDateShort(p.from)}</TableCell>
+                      <TableCell>{formatDateShort(p.to)}</TableCell>
                       <TableCell className="text-right">
                         {p.compra} {unit}
                       </TableCell>
@@ -269,7 +304,12 @@ export function SupplyDetailView({ supplyId }: { supplyId: number }) {
         </div>
       )}
 
-      <AddPurchaseDialog supply={supply ?? null} open={addOpen} onOpenChange={setAddOpen} />
+      <AddPurchaseDialog
+        supply={supply ?? null}
+        purchase={editingPurchase}
+        open={addOpen}
+        onOpenChange={setAddOpen}
+      />
     </>
   );
 }
