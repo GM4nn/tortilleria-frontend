@@ -65,11 +65,11 @@ export function SalesHistoryView() {
 
       <Card className="mb-4 p-4">
         <div className="flex flex-wrap items-end gap-3">
-          <div className="space-y-1">
+          <div className="w-40 space-y-1">
             <Label>Desde</Label>
             <DatePicker value={dateFrom} onChange={(v) => setDateFrom(v ?? "")} placeholder="Desde" />
           </div>
-          <div className="space-y-1">
+          <div className="w-40 space-y-1">
             <Label>Hasta</Label>
             <DatePicker value={dateTo} onChange={(v) => setDateTo(v ?? "")} placeholder="Hasta" />
           </div>
@@ -81,7 +81,7 @@ export function SalesHistoryView() {
       </Card>
 
       <Card>
-        <Table>
+        <Table containerClassName="max-h-[calc(100vh-21rem)]">
           <TableHeader>
             <TableRow>
               <TableHead className="w-24"># Venta</TableHead>

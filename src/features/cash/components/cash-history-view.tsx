@@ -63,11 +63,11 @@ export function CashHistoryView() {
 
       <Card className="mb-4 p-4">
         <div className="flex flex-wrap items-end gap-3">
-          <div className="space-y-1">
+          <div className="w-40 space-y-1">
             <Label>Desde</Label>
             <DatePicker value={dateFrom} onChange={(v) => setDateFrom(v ?? "")} placeholder="Desde" />
           </div>
-          <div className="space-y-1">
+          <div className="w-40 space-y-1">
             <Label>Hasta</Label>
             <DatePicker value={dateTo} onChange={(v) => setDateTo(v ?? "")} placeholder="Hasta" />
           </div>
@@ -79,7 +79,7 @@ export function CashHistoryView() {
       </Card>
 
       <Card>
-        <Table>
+        <Table containerClassName="max-h-[calc(100vh-22rem)]">
           <TableHeader>
             <TableRow>
               <TableHead className="w-14">#</TableHead>
@@ -121,8 +121,12 @@ export function CashHistoryView() {
                   <TableCell className="text-right">{formatCurrency(cut.expected_total)}</TableCell>
                   <TableCell
                     className={cn(
-                      "text-right",
-                      Math.abs(cut.difference) < 0.009 ? "" : "text-destructive"
+                      "text-right font-medium",
+                      cut.difference > 0.009
+                        ? "text-emerald-600"
+                        : cut.difference < -0.009
+                        ? "text-destructive"
+                        : "text-muted-foreground"
                     )}
                   >
                     {formatCurrency(cut.difference)}

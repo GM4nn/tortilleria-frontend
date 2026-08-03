@@ -49,40 +49,45 @@ export function DealerFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>
             {dealer ? "Editar repartidor" : "Nuevo repartidor"}
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Nombre</Label>
-            <Input
-              id="name"
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="username">Usuario</Label>
-            <Input
-              id="username"
-              value={form.username}
-              onChange={(e) => setForm({ ...form, username: e.target.value })}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="pin">PIN</Label>
-            <Input
-              id="pin"
-              value={form.pin}
-              onChange={(e) => setForm({ ...form, pin: e.target.value })}
-              required
-            />
+        <form onSubmit={handleSubmit} className="min-w-0 space-y-4">
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div className="min-w-0 space-y-2">
+              <Label htmlFor="name">Nombre</Label>
+              <Input
+                id="name"
+                className="w-full min-w-0"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                required
+              />
+            </div>
+            <div className="min-w-0 space-y-2">
+              <Label htmlFor="username">Usuario</Label>
+              <Input
+                id="username"
+                className="w-full min-w-0"
+                value={form.username}
+                onChange={(e) => setForm({ ...form, username: e.target.value })}
+                required
+              />
+            </div>
+            <div className="min-w-0 space-y-2">
+              <Label htmlFor="pin">PIN</Label>
+              <Input
+                id="pin"
+                className="w-full min-w-0"
+                value={form.pin}
+                onChange={(e) => setForm({ ...form, pin: e.target.value })}
+                required
+              />
+            </div>
           </div>
 
           <DialogFooter>

@@ -71,54 +71,59 @@ export function CustomerFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle>{customer ? "Editar cliente" : "Nuevo cliente"}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="customer_name">Nombre</Label>
-            <Input
-              id="customer_name"
-              value={form.customer_name}
-              onChange={(e) => setForm({ ...form, customer_name: e.target.value })}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="customer_phone">Teléfono</Label>
-            <Input
-              id="customer_phone"
-              value={form.customer_phone}
-              onChange={(e) => setForm({ ...form, customer_phone: e.target.value })}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="customer_direction">Dirección</Label>
-            <Input
-              id="customer_direction"
-              value={form.customer_direction}
-              onChange={(e) => setForm({ ...form, customer_direction: e.target.value })}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Categoría</Label>
-            <Select
-              value={form.customer_category}
-              onValueChange={(v) => setForm({ ...form, customer_category: v })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Selecciona categoría" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((c) => (
-                  <SelectItem key={c} value={c}>
-                    {c}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        <form onSubmit={handleSubmit} className="min-w-0 space-y-4">
+          <div className="grid gap-4 sm:grid-cols-4">
+            <div className="min-w-0 space-y-2">
+              <Label htmlFor="customer_name">Nombre</Label>
+              <Input
+                id="customer_name"
+                className="w-full min-w-0"
+                value={form.customer_name}
+                onChange={(e) => setForm({ ...form, customer_name: e.target.value })}
+                required
+              />
+            </div>
+            <div className="min-w-0 space-y-2">
+              <Label htmlFor="customer_phone">Teléfono</Label>
+              <Input
+                id="customer_phone"
+                className="w-full min-w-0"
+                value={form.customer_phone}
+                onChange={(e) => setForm({ ...form, customer_phone: e.target.value })}
+              />
+            </div>
+            <div className="min-w-0 space-y-2">
+              <Label htmlFor="customer_direction">Dirección</Label>
+              <Input
+                id="customer_direction"
+                className="w-full min-w-0"
+                value={form.customer_direction}
+                onChange={(e) => setForm({ ...form, customer_direction: e.target.value })}
+              />
+            </div>
+            <div className="min-w-0 space-y-2">
+              <Label>Categoría</Label>
+              <Select
+                value={form.customer_category}
+                onValueChange={(v) => setForm({ ...form, customer_category: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona categoría" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {c}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <DialogFooter>

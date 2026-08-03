@@ -45,21 +45,21 @@ export function OrderDetailDialog({
 
         {order ? (
           <div className="space-y-4">
-            {/* Fechas */}
-            <div>
-              <p className="text-xs text-muted-foreground">
-                Fecha de pedido: {formatDate(order.date)}
-              </p>
-              {order.completed_at ? (
-                <p className="text-xs text-green-600">
-                  Fecha de completado: {formatDate(order.completed_at)}
-                </p>
-              ) : null}
-            </div>
-
             <div className="grid gap-4 sm:grid-cols-2">
-              {/* IZQUIERDA: datos */}
+              {/* IZQUIERDA: fechas + datos */}
               <div className="space-y-1.5 text-sm">
+                {/* Fechas */}
+                <div className="mb-2">
+                  <p className="text-xs text-muted-foreground">
+                    Fecha de pedido: {formatDate(order.date)}
+                  </p>
+                  {order.completed_at ? (
+                    <p className="text-xs text-green-600">
+                      Fecha de completado: {formatDate(order.completed_at)}
+                    </p>
+                  ) : null}
+                </div>
+
                 <div className="flex items-center gap-2">
                   <span className="w-28 shrink-0 font-semibold">Cliente:</span>
                   <span>{customerName || "—"}</span>

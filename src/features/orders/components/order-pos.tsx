@@ -145,7 +145,7 @@ export function OrderPos() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid max-h-[calc(100vh-22rem)] gap-2 overflow-y-auto pr-1 sm:grid-cols-2 lg:grid-cols-3">
               {filteredCustomers.map((customer) => (
                 <button
                   key={customer.id}
@@ -177,21 +177,28 @@ export function OrderPos() {
         <Card>
           <CardContent className="space-y-2 p-4">
             <p className="pb-1 text-sm text-muted-foreground">
-              Cliente: <strong>{selectedCustomer?.customer_name}</strong>
+              Productos para <strong>{selectedCustomer?.customer_name}</strong>
             </p>
-            {products?.map((product) => (
-              <ProductPickerCard
-                key={product.id}
-                product={product}
-                customPrice={priceMap.get(product.id)}
-                inCart={cart.some((item) => item.product_id === product.id)}
-                onAdd={addProduct}
-                onRemove={removeItem}
-                onSaveCustomPrice={(productId, price) =>
-                  setCustomerPrice.mutate({ productId, price })
-                }
-              />
-            ))}
+            <div className="max-h-[calc(100vh-23rem)] space-y-2 overflow-y-auto pr-1">
+              {products?.map((product) => {
+                const cartItem = cart.find((item) => item.product_id === product.id);
+                return (
+                  <ProductPickerCard
+                    key={product.id}
+                    product={product}
+                    customPrice={priceMap.get(product.id)}
+                    inCart={Boolean(cartItem)}
+                    cartQuantity={cartItem?.quantity}
+                    cartUnitPrice={cartItem?.unit_price}
+                    onAdd={addProduct}
+                    onRemove={removeItem}
+                    onSaveCustomPrice={(productId, price) =>
+                      setCustomerPrice.mutate({ productId, price })
+                    }
+                  />
+                );
+              })}
+            </div>
           </CardContent>
         </Card>
       ) : null}
@@ -205,7 +212,7 @@ export function OrderPos() {
               <p className="font-medium">{selectedCustomer?.customer_name ?? "—"}</p>
             </div>
 
-            <div className="space-y-1">
+            <div className="max-h-[calc(100vh-30rem)] space-y-1 overflow-y-auto pr-1">
               {cart.length === 0 ? (
                 <p className="py-6 text-center text-sm text-muted-foreground">Sin productos</p>
               ) : (

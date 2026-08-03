@@ -8,9 +8,9 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  Coins,
   Eye,
   Filter,
-  Wallet,
   X,
 } from "lucide-react";
 
@@ -275,7 +275,7 @@ export function OrdersView() {
                                 title="Cobrar"
                                 onClick={() => setPayTarget(order)}
                               >
-                                <Wallet />
+                                <Coins />
                               </Button>
                             ) : null}
                             <Button

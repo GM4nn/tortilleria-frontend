@@ -1,22 +1,28 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { formatCurrency } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { cn, formatCurrency } from "@/lib/utils";
 import { useCompleteOrder } from "../hooks";
 import type { Order } from "../types";
 
-type RefundState = Record<number, { qty: string; note: string }>;
+const NONE = "ninguno";
 
 export function CompleteDialog({
   order,
@@ -32,37 +38,58 @@ export function CompleteDialog({
   const fullyPaid = remaining <= 0.009;
 
   const [finalPayment, setFinalPayment] = useState("");
-  const [refunds, setRefunds] = useState<RefundState>({});
+  const [refundProductId, setRefundProductId] = useState(NONE);
+  const [refundQty, setRefundQty] = useState("");
+  const [refundNote, setRefundNote] = useState("");
 
   useEffect(() => {
     if (open) {
       setFinalPayment(remaining > 0 ? remaining.toFixed(2) : "0");
-      setRefunds({});
+      setRefundProductId(NONE);
+      setRefundQty("");
+      setRefundNote("");
     }
   }, [open, remaining]);
 
-  const setRefund = (productId: number, field: "qty" | "note", value: string) => {
-    setRefunds((prev) => ({
-      ...prev,
-      [productId]: {
-        qty: prev[productId]?.qty ?? "0",
-        note: prev[productId]?.note ?? "",
-        [field]: value,
-      },
-    }));
-  };
+  const refundDetail = useMemo(
+    () => order?.details.find((d) => String(d.product_id) === refundProductId) ?? null,
+    [order, refundProductId]
+  );
+
+  // Ancho y columnas según cuántos campos se muestran
+  const fieldCount = 1 + (refundDetail ? 2 : 0) + (fullyPaid ? 0 : 1);
+  const widthClass =
+    fieldCount >= 4
+      ? "sm:max-w-5xl"
+      : fieldCount === 3
+      ? "sm:max-w-4xl"
+      : fieldCount === 2
+      ? "sm:max-w-2xl"
+      : "sm:max-w-md";
+  const gridColsClass =
+    fieldCount >= 4
+      ? "sm:grid-cols-2 lg:grid-cols-4"
+      : fieldCount === 3
+      ? "sm:grid-cols-3"
+      : fieldCount === 2
+      ? "sm:grid-cols-2"
+      : "grid-cols-1";
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     if (!order) return;
 
-    const refund_items = order.details
-      .map((d) => ({
-        product_id: d.product_id,
-        quantity: Number(refunds[d.product_id]?.qty) || 0,
-        comments: refunds[d.product_id]?.note?.trim() || null,
-      }))
-      .filter((item) => item.quantity > 0);
+    const qty = Number(refundQty) || 0;
+    const refund_items =
+      refundDetail && qty > 0
+        ? [
+            {
+              product_id: refundDetail.product_id,
+              quantity: qty,
+              comments: refundNote.trim() || null,
+            },
+          ]
+        : [];
 
     complete.mutate(
       {
@@ -75,83 +102,91 @@ export function CompleteDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className={cn("transition-[max-width]", widthClass)}>
         <DialogHeader>
           <DialogTitle>Completar pedido #{order?.id}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Devoluciones (pérdidas) */}
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">
-              Ingresa la cantidad devuelta de cada producto (0 si no hubo devolución).
-            </p>
-            <div className="max-h-72 space-y-2 overflow-auto">
-              {order?.details.map((d) => (
-                <div key={d.product_id} className="rounded-md border p-3">
-                  <div className="mb-2 flex items-center justify-between gap-2">
-                    <span className="font-medium">{d.product_name}</span>
-                    <span className="whitespace-nowrap text-xs text-muted-foreground">
-                      Pedido: {d.quantity}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-[130px_1fr] gap-3">
-                    <div className="space-y-1">
-                      <Label>Cant. devuelta</Label>
-                      <Input
-                        type="number"
-                        min="0"
-                        max={d.quantity}
-                        step="0.01"
-                        value={refunds[d.product_id]?.qty ?? "0"}
-                        onChange={(e) => setRefund(d.product_id, "qty", e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label>Nota</Label>
-                      <Input
-                        value={refunds[d.product_id]?.note ?? ""}
-                        onChange={(e) => setRefund(d.product_id, "note", e.target.value)}
-                        placeholder="Motivo de la devolución (opcional)"
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
+          {/* Fila única de campos */}
+          <div className={cn("grid items-start gap-3", gridColsClass)}>
+            <div className="space-y-2">
+              <Label>Producto devuelto</Label>
+              <Select value={refundProductId} onValueChange={setRefundProductId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Ninguno" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NONE}>Ninguno</SelectItem>
+                  {order?.details.map((d) => (
+                    <SelectItem key={d.product_id} value={String(d.product_id)}>
+                      {d.product_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+
+            {refundDetail ? (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="refund_qty">
+                    Cant. devuelta{" "}
+                    <span className="text-muted-foreground">(de {refundDetail.quantity})</span>
+                  </Label>
+                  <Input
+                    id="refund_qty"
+                    type="number"
+                    min="0"
+                    max={refundDetail.quantity}
+                    step="0.01"
+                    value={refundQty}
+                    onChange={(e) => setRefundQty(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="refund_note">Nota</Label>
+                  <Input
+                    id="refund_note"
+                    value={refundNote}
+                    onChange={(e) => setRefundNote(e.target.value)}
+                    placeholder="Motivo (opcional)"
+                  />
+                </div>
+              </>
+            ) : null}
+
+            {!fullyPaid ? (
+              <div className="space-y-2">
+                <Label htmlFor="final_payment">Pago final</Label>
+                <Input
+                  id="final_payment"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={finalPayment}
+                  onChange={(e) => setFinalPayment(e.target.value)}
+                />
+              </div>
+            ) : null}
           </div>
 
-          {/* Pago */}
-          {fullyPaid ? (
+          {/* Fila inferior: confirmación + botones */}
+          <div className="flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-muted-foreground">
-              ¿Seguro que quieres completar el pedido? Ya está totalmente pagado.
+              {fullyPaid
+                ? "¿Seguro que quieres completar el pedido? Ya está totalmente pagado."
+                : `Debe quedar totalmente pagado. Restante: ${formatCurrency(remaining)}.`}
             </p>
-          ) : (
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">
-                Para completar, el pedido debe quedar totalmente pagado. Restante:{" "}
-                <strong>{formatCurrency(remaining)}</strong>.
-              </p>
-              <Label htmlFor="final_payment">Pago final</Label>
-              <Input
-                id="final_payment"
-                type="number"
-                min="0"
-                step="0.01"
-                value={finalPayment}
-                onChange={(e) => setFinalPayment(e.target.value)}
-              />
+            <div className="flex shrink-0 gap-2">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={complete.isPending}>
+                {complete.isPending ? "Completando..." : "Completar pedido"}
+              </Button>
             </div>
-          )}
-
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={complete.isPending}>
-              {complete.isPending ? "Completando..." : "Completar pedido"}
-            </Button>
-          </DialogFooter>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

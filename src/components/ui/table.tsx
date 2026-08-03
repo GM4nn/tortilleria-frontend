@@ -2,18 +2,27 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(
-  ({ className, ...props }, ref) => (
-    <div className="relative w-full overflow-auto">
-      <table ref={ref} className={cn("w-full caption-bottom text-sm", className)} {...props} />
-    </div>
-  )
-);
+const Table = React.forwardRef<
+  HTMLTableElement,
+  React.HTMLAttributes<HTMLTableElement> & { containerClassName?: string }
+>(({ className, containerClassName, ...props }, ref) => (
+  // El scroll (vertical y horizontal) queda dentro del contenedor, no en toda la página.
+  // containerClassName permite ajustar el max-h por vista (p. ej. si hay filtros).
+  <div
+    className={cn(
+      "relative w-full overflow-auto max-h-[calc(100vh-15rem)]",
+      containerClassName
+    )}
+  >
+    <table ref={ref} className={cn("w-full caption-bottom text-sm", className)} {...props} />
+  </div>
+));
 Table.displayName = "Table";
 
 const TableHeader = React.forwardRef<HTMLTableSectionElement, React.HTMLAttributes<HTMLTableSectionElement>>(
   ({ className, ...props }, ref) => (
-    <thead ref={ref} className={cn("[&_tr]:border-b", className)} {...props} />
+    // Encabezado fijo mientras se hace scroll dentro de la tabla
+    <thead ref={ref} className={cn("sticky top-0 z-10 bg-card [&_tr]:border-b", className)} {...props} />
   )
 );
 TableHeader.displayName = "TableHeader";

@@ -18,6 +18,8 @@ export function ProductPickerCard({
   product,
   customPrice,
   inCart = false,
+  cartQuantity,
+  cartUnitPrice,
   onAdd,
   onRemove,
   onSaveCustomPrice,
@@ -25,6 +27,8 @@ export function ProductPickerCard({
   product: Product;
   customPrice?: number;
   inCart?: boolean;
+  cartQuantity?: number;
+  cartUnitPrice?: number;
   onAdd: (
     productId: number,
     name: string,
@@ -42,6 +46,17 @@ export function ProductPickerCard({
   useEffect(() => {
     if (!editing) setPrice(String(customPrice ?? product.price));
   }, [customPrice, product.price, editing]);
+
+  // Mantiene el input sincronizado con lo que ya está en el pedido
+  useEffect(() => {
+    if (cartQuantity != null) setQuantity(String(cartQuantity));
+  }, [cartQuantity]);
+
+  const inputQty = Math.max(1, Number(quantity) || 1);
+  const inputPrice = Number(price) || product.price;
+  // Ya está agregado con la misma cantidad y precio -> no hay nada que actualizar
+  const alreadyAdded =
+    inCart && cartQuantity === inputQty && (cartUnitPrice ?? inputPrice) === inputPrice;
 
   const toggleEdit = () => {
     if (editing) {
@@ -113,8 +128,20 @@ export function ProductPickerCard({
         />
       </div>
 
-      <Button type="button" className="h-9" onClick={handleAdd}>
-        <Plus /> Agregar
+      <Button type="button" className="h-9" onClick={handleAdd} disabled={alreadyAdded}>
+        {alreadyAdded ? (
+          <>
+            <Check /> Agregado
+          </>
+        ) : inCart ? (
+          <>
+            <Plus /> Actualizar
+          </>
+        ) : (
+          <>
+            <Plus /> Agregar
+          </>
+        )}
       </Button>
 
       {inCart && onRemove ? (

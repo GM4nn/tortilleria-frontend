@@ -150,18 +150,15 @@ export function OrderFiltersDialog({
           {filterType === "date" ? (
             <div className="space-y-2">
               <Label>Rango de fecha (creación)</Label>
-              <div className="flex items-center gap-2">
-                <DatePicker
-                  value={dateFrom}
-                  onChange={(v) => setDateFrom(v ?? "")}
-                  placeholder="Desde"
-                />
-                <span className="text-sm text-muted-foreground">a</span>
-                <DatePicker
-                  value={dateTo}
-                  onChange={(v) => setDateTo(v ?? "")}
-                  placeholder="Hasta"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="min-w-0 space-y-1">
+                  <span className="block text-xs text-muted-foreground">Desde</span>
+                  <DatePicker value={dateFrom} onChange={(v) => setDateFrom(v ?? "")} />
+                </div>
+                <div className="min-w-0 space-y-1">
+                  <span className="block text-xs text-muted-foreground">Hasta</span>
+                  <DatePicker value={dateTo} onChange={(v) => setDateTo(v ?? "")} />
+                </div>
               </div>
             </div>
           ) : null}

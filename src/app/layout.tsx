@@ -18,8 +18,11 @@ export default function RootLayout({
     <html lang="es">
       <body>
         <Providers>
-          <div className="min-h-screen bg-background">
-            <main className="mx-auto max-w-6xl p-4 pb-24">{children}</main>
+          {/* Alto fijo al viewport: la página no scrollea; el scroll vive dentro del contenido */}
+          <div className="flex h-screen flex-col overflow-hidden bg-background">
+            <main className="mx-auto w-full max-w-6xl flex-1 overflow-y-auto p-4 pb-24">
+              {children}
+            </main>
           </div>
           <BottomNav />
         </Providers>
