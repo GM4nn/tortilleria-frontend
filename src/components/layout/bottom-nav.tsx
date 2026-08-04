@@ -19,6 +19,7 @@ import {
 
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/features/auth/auth-context";
+import { ADMIN_USERNAME, NON_ADMIN_ROUTES } from "@/features/auth/constants";
 
 const NAV_ITEMS = [
   { href: "/sales", label: "Ventas", icon: ShoppingCart },
@@ -37,7 +38,7 @@ const NAV_ITEMS = [
 export function BottomNav() {
   const pathname = usePathname();
   const router = useRouter();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
 
   // En el login (raíz) no se muestra la barra de navegación
   if (pathname === "/") return null;
@@ -47,10 +48,16 @@ export function BottomNav() {
     router.replace("/");
   };
 
+  // Si no es admin, solo ve ventas, pedidos y caja
+  const isAdmin = user?.username === ADMIN_USERNAME;
+  const items = isAdmin
+    ? NAV_ITEMS
+    : NAV_ITEMS.filter((item) => NON_ADMIN_ROUTES.includes(item.href));
+
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t bg-card">
       <div className="flex items-stretch justify-around overflow-x-auto">
-        {NAV_ITEMS.map((item) => {
+        {items.map((item) => {
           const active = pathname.startsWith(item.href);
           const Icon = item.icon;
           return (
