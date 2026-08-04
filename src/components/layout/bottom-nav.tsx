@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Bike,
   Bot,
   ClipboardList,
   LayoutDashboard,
+  LogOut,
   Package,
   Scale,
   ShoppingCart,
@@ -17,11 +18,12 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/features/auth/auth-context";
 
 const NAV_ITEMS = [
-  { href: "/", label: "Inicio", icon: LayoutDashboard },
-  { href: "/orders", label: "Pedidos", icon: ClipboardList },
   { href: "/sales", label: "Ventas", icon: ShoppingCart },
+  { href: "/orders", label: "Pedidos", icon: ClipboardList },
+  { href: "/inicio", label: "Reportes", icon: LayoutDashboard },
   { href: "/cash", label: "Caja", icon: Wallet },
   { href: "/finanzas", label: "Finanzas", icon: Scale },
   { href: "/products", label: "Productos", icon: Package },
@@ -34,13 +36,22 @@ const NAV_ITEMS = [
 
 export function BottomNav() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { logout } = useAuth();
+
+  // En el login (raíz) no se muestra la barra de navegación
+  if (pathname === "/") return null;
+
+  const handleLogout = () => {
+    logout();
+    router.replace("/");
+  };
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t bg-card">
       <div className="flex items-stretch justify-around overflow-x-auto">
         {NAV_ITEMS.map((item) => {
-          const active =
-            item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+          const active = pathname.startsWith(item.href);
           const Icon = item.icon;
           return (
             <Link
@@ -59,6 +70,16 @@ export function BottomNav() {
             </Link>
           );
         })}
+
+        <button
+          type="button"
+          onClick={handleLogout}
+          title="Cerrar sesión"
+          className="flex min-w-[64px] flex-col items-center gap-1 px-2 py-2 text-[10px] font-medium text-muted-foreground transition-colors hover:text-destructive"
+        >
+          <LogOut className="h-5 w-5" />
+          Salir
+        </button>
       </div>
     </nav>
   );

@@ -7,10 +7,16 @@ export class ApiError extends Error {
   }
 }
 
+const TOKEN_KEY = "auth_token";
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem(TOKEN_KEY) : null;
+
   const res = await fetch(`${BASE_URL}${path}`, {
     headers: {
       "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options?.headers ?? {}),
     },
     cache: "no-store",
@@ -25,6 +31,14 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
     } catch {
       /* respuesta sin cuerpo JSON */
     }
+
+    // Sesión inválida/expirada: limpia y manda al login
+    if (res.status === 401 && typeof window !== "undefined") {
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem("auth_user");
+      if (window.location.pathname !== "/") window.location.href = "/";
+    }
+
     throw new ApiError(res.status, detail);
   }
 

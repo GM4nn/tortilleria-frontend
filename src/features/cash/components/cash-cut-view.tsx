@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/layout/page-header";
 import { formatCurrency } from "@/lib/utils";
+import { useAuth } from "@/features/auth/auth-context";
 import { useCashSummary, useCreateCut, useTodayCut } from "../hooks";
 
 function startOfTodayIso() {
@@ -39,6 +41,8 @@ function StatCard({
 }
 
 export function CashCutView() {
+  const router = useRouter();
+  const { logout } = useAuth();
   const summary = useCashSummary();
   const todayCut = useTodayCut();
   const createCut = useCreateCut();
@@ -60,20 +64,29 @@ export function CashCutView() {
 
   const handleClose = () => {
     if (!summary.data) return;
-    createCut.mutate({
-      opened_at: startOfTodayIso(),
-      sales_count: summary.data.sales_count,
-      orders_count: summary.data.orders_count,
-      sales_total: summary.data.sales_total,
-      orders_total: summary.data.orders_total,
-      expected_total: expected,
-      declared_cash: Number(cash) || 0,
-      declared_card: Number(card) || 0,
-      declared_transfer: Number(transfer) || 0,
-      declared_total: declaredTotal,
-      difference,
-      notes: notes || null,
-    });
+    createCut.mutate(
+      {
+        opened_at: startOfTodayIso(),
+        sales_count: summary.data.sales_count,
+        orders_count: summary.data.orders_count,
+        sales_total: summary.data.sales_total,
+        orders_total: summary.data.orders_total,
+        expected_total: expected,
+        declared_cash: Number(cash) || 0,
+        declared_card: Number(card) || 0,
+        declared_transfer: Number(transfer) || 0,
+        declared_total: declaredTotal,
+        difference,
+        notes: notes || null,
+      },
+      {
+        // Tras el corte se cierra la sesión
+        onSuccess: () => {
+          logout();
+          router.replace("/");
+        },
+      }
+    );
   };
 
   return (

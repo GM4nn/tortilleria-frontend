@@ -74,7 +74,7 @@ export function DashboardView() {
 
   return (
     <>
-      <PageHeader title="Inicio" description="Resumen del negocio" />
+      <PageHeader title="Reportes" description="Resumen del negocio" />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard

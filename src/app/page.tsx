@@ -1,5 +1,5 @@
-import { DashboardView } from "@/features/reports/components/dashboard-view";
+import { LoginView } from "@/features/auth/components/login-view";
 
 export default function HomePage() {
-  return <DashboardView />;
+  return <LoginView />;
 }
