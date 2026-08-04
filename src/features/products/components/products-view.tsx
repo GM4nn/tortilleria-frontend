@@ -38,6 +38,7 @@ export function ProductsView() {
   };
 
   const handleDelete = (product: Product) => {
+    if (product.is_default) return;
     if (confirm(`¿Eliminar el producto "${product.name}"?`)) {
       deleteProduct.mutate(product.id);
     }
@@ -93,6 +94,8 @@ export function ProductsView() {
                         variant="ghost"
                         size="icon"
                         className="text-destructive"
+                        disabled={product.is_default}
+                        title={product.is_default ? "Producto del sistema" : "Eliminar"}
                         onClick={() => handleDelete(product)}
                       >
                         <Trash2 />

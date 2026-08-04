@@ -12,16 +12,17 @@ export function useMonthlyIncome() {
   return useQuery({ queryKey: ["reports", "monthly"], queryFn: reportsApi.monthlyIncome });
 }
 
-export function useTopProducts(limit = 5) {
+export function useLossesTotal() {
+  return useQuery({ queryKey: ["reports", "losses-total"], queryFn: reportsApi.lossesTotal });
+}
+
+export function useOrdersBreakdown() {
   return useQuery({
-    queryKey: ["reports", "top-products", limit],
-    queryFn: () => reportsApi.topProducts(limit),
+    queryKey: ["reports", "orders-breakdown"],
+    queryFn: reportsApi.ordersBreakdown,
   });
 }
 
-export function useTopCustomers(limit = 5) {
-  return useQuery({
-    queryKey: ["reports", "top-customers", limit],
-    queryFn: () => reportsApi.topCustomers(limit),
-  });
+export function useFinance() {
+  return useQuery({ queryKey: ["reports", "finance"], queryFn: reportsApi.finance });
 }

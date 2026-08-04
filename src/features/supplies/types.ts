@@ -36,3 +36,34 @@ export interface SupplyPurchaseInput {
   purchase_date?: string | null;
   notes?: string | null;
 }
+
+export interface SupplyPeriod {
+  from_date: string | null;
+  to_date: string | null;
+  compra: number;
+  sobrante: number;
+  disponible: number;
+  consumido: number;
+  restante: number;
+  pct: number;
+}
+
+export interface Pagination {
+  total_data: number;
+  total_pages: number;
+  current_page: number;
+  next_page: number;
+  prev_page: number;
+  last_page: number;
+  first_page: number;
+}
+
+export interface Paginated<T> {
+  pagination: Pagination;
+  data: T[];
+}
+
+export interface PaginatedPeriods extends Paginated<SupplyPeriod> {
+  current: SupplyPeriod | null;
+  inventory: number;
+}

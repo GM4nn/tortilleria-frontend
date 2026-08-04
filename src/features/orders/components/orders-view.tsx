@@ -266,18 +266,20 @@ export function OrdersView() {
                         >
                           <Eye />
                         </Button>
+                        {/* Abonar: cualquier pedido no pagado y no cancelado (aunque esté completado) */}
+                        {order.payment_status !== "Pagado" &&
+                        order.status !== "cancelado" ? (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title="Abonar / Cobrar"
+                            onClick={() => setPayTarget(order)}
+                          >
+                            <Coins />
+                          </Button>
+                        ) : null}
                         {pending ? (
                           <>
-                            {order.payment_status !== "Pagado" ? (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                title="Cobrar"
-                                onClick={() => setPayTarget(order)}
-                              >
-                                <Coins />
-                              </Button>
-                            ) : null}
                             <Button
                               variant="ghost"
                               size="icon"

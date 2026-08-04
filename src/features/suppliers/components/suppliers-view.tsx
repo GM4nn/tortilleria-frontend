@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Pencil, Plus, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -15,13 +15,21 @@ import {
 } from "@/components/ui/table";
 import { PageHeader } from "@/components/layout/page-header";
 import { CenteredSpinner } from "@/components/ui/spinner";
-import { useDeleteSupplier, useSuppliers } from "../hooks";
+import { useDeleteSupplier, useSuppliersPaginated } from "../hooks";
 import type { Supplier } from "../types";
 import { SupplierFormDialog } from "./supplier-form-dialog";
 
+const PAGE_SIZE = 10;
+
 export function SuppliersView() {
-  const { data: suppliers, isLoading } = useSuppliers();
+  const [page, setPage] = useState(1);
+  const { data, isLoading } = useSuppliersPaginated(page, PAGE_SIZE);
   const deleteSupplier = useDeleteSupplier();
+
+  const suppliers = data?.data ?? [];
+  const total = data?.pagination.total_data ?? 0;
+  const totalPages = data?.pagination.total_pages ?? 1;
+  const currentPage = Math.min(page, totalPages);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Supplier | null>(null);
@@ -73,7 +81,7 @@ export function SuppliersView() {
                   <CenteredSpinner />
                 </TableCell>
               </TableRow>
-            ) : !suppliers?.length ? (
+            ) : !suppliers.length ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center text-muted-foreground">
                   No hay proveedores
@@ -108,6 +116,31 @@ export function SuppliersView() {
           </TableBody>
         </Table>
       </Card>
+
+      {/* Paginación */}
+      <div className="mt-3 flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">
+          {total} proveedor{total === 1 ? "" : "es"} · Página {currentPage} de {totalPages}
+        </p>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={currentPage <= 1}
+            onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+          >
+            <ChevronLeft /> Anterior
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={currentPage >= totalPages}
+            onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+          >
+            Siguiente <ChevronRight />
+          </Button>
+        </div>
+      </div>
 
       <SupplierFormDialog open={dialogOpen} onOpenChange={setDialogOpen} supplier={editing} />
     </>

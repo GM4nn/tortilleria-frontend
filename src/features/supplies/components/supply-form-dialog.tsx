@@ -74,54 +74,57 @@ export function SupplyFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>{supply ? "Editar insumo" : "Nuevo insumo"}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="supply_name">Nombre</Label>
-            <Input
-              id="supply_name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Proveedor (opcional)</Label>
-            <Select
-              value={supplierId || "none"}
-              onValueChange={(v) => setSupplierId(v === "none" ? "" : v)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Sin proveedor" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Sin proveedor</SelectItem>
-                {suppliers?.map((supplier) => (
-                  <SelectItem key={supplier.id} value={String(supplier.id)}>
-                    {supplier.supplier_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Unidad</Label>
-            <Select value={unit} onValueChange={setUnit}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {(meta?.supply_units ?? []).map((u) => (
-                  <SelectItem key={u} value={u}>
-                    {u}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        <form onSubmit={handleSubmit} className="min-w-0 space-y-4">
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div className="min-w-0 space-y-2">
+              <Label htmlFor="supply_name">Nombre</Label>
+              <Input
+                id="supply_name"
+                className="w-full min-w-0"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+            <div className="min-w-0 space-y-2">
+              <Label>Proveedor (opcional)</Label>
+              <Select
+                value={supplierId || "none"}
+                onValueChange={(v) => setSupplierId(v === "none" ? "" : v)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sin proveedor" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Sin proveedor</SelectItem>
+                  {suppliers?.map((supplier) => (
+                    <SelectItem key={supplier.id} value={String(supplier.id)}>
+                      {supplier.supplier_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="min-w-0 space-y-2">
+              <Label>Unidad</Label>
+              <Select value={unit} onValueChange={setUnit}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {(meta?.supply_units ?? []).map((u) => (
+                    <SelectItem key={u} value={u}>
+                      {u}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <DialogFooter>

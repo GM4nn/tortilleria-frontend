@@ -3,6 +3,8 @@ export interface Product {
   icon: string;
   name: string;
   price: number;
+  code?: string | null;
+  is_default?: boolean;
 }
 
 export interface ProductInput {

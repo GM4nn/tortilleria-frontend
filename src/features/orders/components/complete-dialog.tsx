@@ -44,7 +44,7 @@ export function CompleteDialog({
 
   useEffect(() => {
     if (open) {
-      setFinalPayment(remaining > 0 ? remaining.toFixed(2) : "0");
+      setFinalPayment("0");
       setRefundProductId(NONE);
       setRefundQty("");
       setRefundNote("");
@@ -55,6 +55,9 @@ export function CompleteDialog({
     () => order?.details.find((d) => String(d.product_id) === refundProductId) ?? null,
     [order, refundProductId]
   );
+
+  // El pago no puede exceder lo que resta por pagar
+  const paymentExceeds = !fullyPaid && (Number(finalPayment) || 0) > remaining + 0.009;
 
   // Ancho y columnas según cuántos campos se muestran
   const fieldCount = 1 + (refundDetail ? 2 : 0) + (fullyPaid ? 0 : 1);
@@ -158,15 +161,22 @@ export function CompleteDialog({
 
             {!fullyPaid ? (
               <div className="space-y-2">
-                <Label htmlFor="final_payment">Pago final</Label>
+                <Label htmlFor="final_payment">Pago (opcional)</Label>
                 <Input
                   id="final_payment"
                   type="number"
                   min="0"
+                  max={remaining}
                   step="0.01"
                   value={finalPayment}
                   onChange={(e) => setFinalPayment(e.target.value)}
+                  className={cn(paymentExceeds && "border-destructive")}
                 />
+                {paymentExceeds ? (
+                  <p className="text-xs text-destructive">
+                    No puede exceder el restante ({formatCurrency(remaining)})
+                  </p>
+                ) : null}
               </div>
             ) : null}
           </div>
@@ -176,13 +186,13 @@ export function CompleteDialog({
             <p className="text-sm text-muted-foreground">
               {fullyPaid
                 ? "¿Seguro que quieres completar el pedido? Ya está totalmente pagado."
-                : `Debe quedar totalmente pagado. Restante: ${formatCurrency(remaining)}.`}
+                : `Restante: ${formatCurrency(remaining)}. Puedes registrar un pago o completar sin pagar (queda pendiente de pago).`}
             </p>
             <div className="flex shrink-0 gap-2">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancelar
               </Button>
-              <Button type="submit" disabled={complete.isPending}>
+              <Button type="submit" disabled={complete.isPending || paymentExceeds}>
                 {complete.isPending ? "Completando..." : "Completar pedido"}
               </Button>
             </div>

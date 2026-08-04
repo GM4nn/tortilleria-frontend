@@ -1,9 +1,16 @@
 import { api } from "@/lib/api-client";
-import type { MonthlyIncome, TodaySummary, TopCustomer, TopProduct } from "./types";
+import type {
+  FinanceReport,
+  LossesTotal,
+  MonthlyIncome,
+  OrdersBreakdown,
+  TodaySummary,
+} from "./types";
 
 export const reportsApi = {
   today: () => api.get<TodaySummary>("/reports/today"),
   monthlyIncome: () => api.get<MonthlyIncome>("/reports/monthly-income"),
-  topProducts: (limit = 5) => api.get<TopProduct[]>(`/reports/top-products?limit=${limit}`),
-  topCustomers: (limit = 5) => api.get<TopCustomer[]>(`/reports/top-customers?limit=${limit}`),
+  lossesTotal: () => api.get<LossesTotal>("/reports/losses-total"),
+  ordersBreakdown: () => api.get<OrdersBreakdown>("/reports/orders-breakdown"),
+  finance: () => api.get<FinanceReport>("/reports/finance"),
 };

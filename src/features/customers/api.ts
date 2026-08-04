@@ -1,5 +1,5 @@
 import { api } from "@/lib/api-client";
-import type { Customer, CustomerInput } from "./types";
+import type { Customer, CustomerInput, Paginated } from "./types";
 
 export interface CustomerPrice {
   product_id: number;
@@ -8,6 +8,8 @@ export interface CustomerPrice {
 
 export const customersApi = {
   list: () => api.get<Customer[]>("/customers"),
+  listPaginated: (offset = 0, limit = 10) =>
+    api.get<Paginated<Customer>>(`/customers/paginated?offset=${offset}&limit=${limit}`),
   create: (data: CustomerInput) => api.post<Customer>("/customers", data),
   update: (id: number, data: CustomerInput) =>
     api.put<Customer>(`/customers/${id}`, data),

@@ -1,6 +1,11 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { ApiError } from "@/lib/api-client";
@@ -11,6 +16,14 @@ const QUERY_KEY = ["suppliers"];
 
 export function useSuppliers() {
   return useQuery({ queryKey: QUERY_KEY, queryFn: suppliersApi.list });
+}
+
+export function useSuppliersPaginated(page: number, pageSize: number) {
+  return useQuery({
+    queryKey: [...QUERY_KEY, "paginated", page, pageSize],
+    queryFn: () => suppliersApi.listPaginated((page - 1) * pageSize, pageSize),
+    placeholderData: keepPreviousData,
+  });
 }
 
 export function useSaveSupplier() {
