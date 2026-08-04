@@ -37,7 +37,7 @@ export function LoginView() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/30 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-muted/30 p-4">
       <Card className="w-full max-w-sm shadow-lg">
         <CardContent className="p-6 sm:p-8">
           {/* Marca */}

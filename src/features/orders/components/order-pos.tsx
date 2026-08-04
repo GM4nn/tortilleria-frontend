@@ -6,6 +6,13 @@ import { ArrowLeft, Check, Minus, Pencil, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -40,6 +47,7 @@ export function OrderPos() {
   const [quantities, setQuantities] = useState<Record<number, number>>({});
   const [prices, setPrices] = useState<Record<number, string>>({}); // precios editados
   const [editingId, setEditingId] = useState<number | null>(null); // producto en edición de precio
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const { data: customerPrices } = useCustomerPrices(customerId);
   const setCustomerPrice = useSetCustomerPrice(customerId ?? 0);
@@ -121,7 +129,12 @@ export function OrderPos() {
         default_dealer: dealer || null,
         items: cart,
       },
-      { onSuccess: () => router.push("/orders/historial") }
+      {
+        onSuccess: () => {
+          setConfirmOpen(false);
+          router.push("/orders/historial");
+        },
+      }
     );
   };
 
@@ -331,13 +344,40 @@ export function OrderPos() {
                 <span className="text-2xl font-bold">{formatCurrency(total)}</span>
               </div>
 
-              <Button className="w-full" size="lg" disabled={!canSave} onClick={handleSave}>
-                {createOrder.isPending ? "Guardando..." : "Crear pedido"}
+              <Button
+                className="w-full"
+                size="lg"
+                disabled={!canSave}
+                onClick={() => setConfirmOpen(true)}
+              >
+                Crear pedido
               </Button>
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Confirmación de creación */}
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Confirmar pedido</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            ¿Crear el pedido de{" "}
+            <strong className="text-foreground">{selectedCustomer?.customer_name}</strong> por{" "}
+            <strong className="text-foreground">{formatCurrency(total)}</strong>?
+          </p>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setConfirmOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSave} disabled={createOrder.isPending}>
+              {createOrder.isPending ? "Creando..." : "Sí, crear"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

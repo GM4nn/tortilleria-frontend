@@ -5,6 +5,7 @@ export interface Product {
   price: number;
   code?: string | null;
   is_default?: boolean;
+  display_order?: number;
 }
 
 export interface ProductInput {

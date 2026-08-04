@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/table";
 import { PageHeader } from "@/components/layout/page-header";
 import { CenteredSpinner } from "@/components/ui/spinner";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatDateTimeShort } from "@/lib/utils";
 import { useCustomers } from "@/features/customers/hooks";
 import { useDealers } from "@/features/dealers/hooks";
 import { useCancelOrder, useOrders } from "../hooks";
@@ -210,11 +210,12 @@ export function OrdersView() {
           <TableHeader>
             <TableRow>
               <TableHead className="w-16">#</TableHead>
+              <TableHead>Fecha</TableHead>
               <TableHead>Cliente</TableHead>
               <TableHead>Total</TableHead>
               <TableHead>Pagado</TableHead>
               <TableHead>Entrega</TableHead>
-              <TableHead>Pago</TableHead>
+              <TableHead className="w-28">Pago</TableHead>
               <TableHead>Devuelto</TableHead>
               <TableHead>Repartidor</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
@@ -223,13 +224,13 @@ export function OrdersView() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={9}>
+                <TableCell colSpan={10}>
                   <CenteredSpinner />
                 </TableCell>
               </TableRow>
             ) : !orders?.length ? (
               <TableRow>
-                <TableCell colSpan={9} className="text-center text-muted-foreground">
+                <TableCell colSpan={10} className="text-center text-muted-foreground">
                   No hay pedidos
                 </TableCell>
               </TableRow>
@@ -243,6 +244,9 @@ export function OrdersView() {
                 return (
                   <TableRow key={order.id}>
                     <TableCell className="font-medium">#{order.id}</TableCell>
+                    <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
+                      {formatDateTimeShort(order.date)}
+                    </TableCell>
                     <TableCell>{customerName.get(order.customer_id) ?? "—"}</TableCell>
                     <TableCell>{formatCurrency(order.total)}</TableCell>
                     <TableCell>{formatCurrency(order.amount_paid)}</TableCell>

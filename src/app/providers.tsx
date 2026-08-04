@@ -16,7 +16,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <AuthProvider>
         <AuthGuard>{children}</AuthGuard>
       </AuthProvider>
-      <Toaster richColors position="top-right" />
+      <Toaster richColors closeButton position="top-right" />
     </QueryClientProvider>
   );
 }

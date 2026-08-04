@@ -33,3 +33,11 @@ body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
 }
+
+/* Botón de cerrar del toast (sonner): a la derecha, dentro del recuadro */
+[data-sonner-toast] [data-close-button] {
+  left: auto;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+}

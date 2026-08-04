@@ -32,3 +32,17 @@ export function formatDateShort(value?: string | null): string {
   if (Number.isNaN(date.getTime())) return value;
   return new Intl.DateTimeFormat("es-MX", { dateStyle: "medium" }).format(date);
 }
+
+// Fecha + hora compacta, ej. "3 ago, 14:45" (cabe en una columna)
+export function formatDateTimeShort(value?: string | null): string {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("es-MX", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(date);
+}
