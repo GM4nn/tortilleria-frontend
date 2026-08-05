@@ -6,6 +6,13 @@ import { Pencil, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Table,
   TableBody,
   TableCell,
@@ -25,6 +32,7 @@ export function DealersView() {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Dealer | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Dealer | null>(null);
 
   const openCreate = () => {
     setEditing(null);
@@ -36,10 +44,11 @@ export function DealersView() {
     setDialogOpen(true);
   };
 
-  const handleDelete = (dealer: Dealer) => {
-    if (confirm(`¿Eliminar al repartidor "${dealer.name}"?`)) {
-      deleteDealer.mutate(dealer.id);
-    }
+  const confirmDelete = () => {
+    if (!deleteTarget) return;
+    deleteDealer.mutate(deleteTarget.id, {
+      onSuccess: () => setDeleteTarget(null),
+    });
   };
 
   return (
@@ -92,7 +101,7 @@ export function DealersView() {
                         variant="ghost"
                         size="icon"
                         className="text-destructive"
-                        onClick={() => handleDelete(dealer)}
+                        onClick={() => setDeleteTarget(dealer)}
                       >
                         <Trash2 />
                       </Button>
@@ -110,6 +119,35 @@ export function DealersView() {
         onOpenChange={setDialogOpen}
         dealer={editing}
       />
+
+      {/* Confirmación de eliminación */}
+      <Dialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+      >
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Eliminar repartidor</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            ¿Seguro que quieres eliminar a{" "}
+            <strong className="text-foreground">{deleteTarget?.name}</strong>? Esta acción no
+            se puede deshacer.
+          </p>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setDeleteTarget(null)}>
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDelete}
+              disabled={deleteDealer.isPending}
+            >
+              {deleteDealer.isPending ? "Eliminando..." : "Eliminar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

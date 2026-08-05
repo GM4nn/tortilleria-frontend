@@ -31,6 +31,7 @@ import { formatCurrency, formatDateTimeShort } from "@/lib/utils";
 import { useCustomers } from "@/features/customers/hooks";
 import { useDealers } from "@/features/dealers/hooks";
 import { useCancelOrder, useOrders } from "../hooks";
+import { useOrdersRealtime } from "../use-orders-realtime";
 import type { Order, OrderFilters } from "../types";
 import { CompleteDialog } from "./complete-dialog";
 import { OrderDetailDialog } from "./order-detail-dialog";
@@ -72,6 +73,7 @@ export function OrdersView() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [page, setPage] = useState(1);
 
+  useOrdersRealtime(); // WS abierto solo mientras esta vista esté montada
   const { data, isLoading } = useOrders(filters, page, PAGE_SIZE);
   const orders = data?.data;
   const total = data?.pagination.total_data ?? 0;
