@@ -1,7 +1,10 @@
 "use client";
 
-import { CalendarDays, ClipboardList, Coins, ShoppingCart } from "lucide-react";
+import { useState } from "react";
+import { CalendarDays, ClipboardList, Coins, Download, ShoppingCart } from "lucide-react";
+import { toast } from "sonner";
 
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -12,6 +15,28 @@ import { PageHeader } from "@/components/layout/page-header";
 import { CenteredSpinner } from "@/components/ui/spinner";
 import { cn, formatCurrency } from "@/lib/utils";
 import { useLossesTotal, useMonthlyIncome, useOrdersBreakdown, useTodaySummary } from "../hooks";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api";
+
+async function downloadExcel() {
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+  const res = await fetch(`${API_BASE}/reports/export`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error("No se pudo generar el Excel");
+
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `reporte-ventas-${new Date().toISOString().slice(0, 10)}.xlsx`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
 
 function StatCard({
   title,
@@ -72,9 +97,36 @@ export function DashboardView() {
   const status = breakdown.data?.by_status;
   const payment = breakdown.data?.by_payment;
 
+  const [downloading, setDownloading] = useState(false);
+
+  const handleDownload = async () => {
+    setDownloading(true);
+    try {
+      await downloadExcel();
+      toast.success("Excel descargado");
+    } catch {
+      toast.error("No se pudo descargar el Excel");
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   return (
     <>
-      <PageHeader title="Reportes" description="Resumen del negocio" />
+      <PageHeader
+        title="Reportes"
+        description="Resumen del negocio"
+        action={
+          <Button
+            className="bg-emerald-600 hover:bg-emerald-700"
+            onClick={handleDownload}
+            disabled={downloading}
+          >
+            <Download />
+            {downloading ? "Generando..." : "Descargar Excel"}
+          </Button>
+        }
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard

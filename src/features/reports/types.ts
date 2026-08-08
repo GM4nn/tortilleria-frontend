@@ -34,18 +34,25 @@ export interface PeriodCount {
   month: number;
 }
 
-export interface FinancePeriod {
-  sales_total: number;
-  orders_total: number;
-  income: number;
-  expenses: number;
-  net: number;
-  margin: number;
+export interface FinanceSupplyItem {
+  supply_name: string;
+  last_purchase_date: string;
+  days_since: number;
+  quantity: number;
+  unit: string;
+  expense: number;
 }
 
 export interface FinanceReport {
-  week: FinancePeriod;
-  month: FinancePeriod;
+  items: FinanceSupplyItem[];
+  total_expense: number;
+  income_since: string | null;
+  days_since: number;
+  sales_total: number;
+  orders_total: number;
+  income: number;
+  net: number;
+  margin: number;
 }
 
 export interface OrdersBreakdown {

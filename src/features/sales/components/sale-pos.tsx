@@ -16,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { cn, formatCurrency } from "@/lib/utils";
 import { useProducts } from "@/features/products/hooks";
+import type { Product } from "@/features/products/types";
 import { useCreateSale } from "../hooks";
 
 type Cart = { id: number; quantities: Record<number, number> };
@@ -28,6 +29,8 @@ export function SalePos() {
   const [carts, setCarts] = useState<Cart[]>([{ id: 1, quantities: {} }]);
   const [activeId, setActiveId] = useState(1);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  // Producto cuya cantidad se está editando en el modal (draft en texto para decimales)
+  const [qtyEdit, setQtyEdit] = useState<{ product: Product; value: string } | null>(null);
   const lastId = useRef(1);
 
   const activeCart = carts.find((c) => c.id === activeId) ?? carts[0];
@@ -41,12 +44,15 @@ export function SalePos() {
   const total = cartItems.reduce((sum, p) => sum + p.price * (quantities[p.id] ?? 0), 0);
 
   const setQty = (productId: number, qty: number) => {
+    // Redondea a 3 decimales (gramos) para evitar basura de punto flotante
+    // como 0.39890000000000003 al sumar/restar o teclear pesos.
+    const rounded = Math.round(qty * 1000) / 1000;
     setCarts((prev) =>
       prev.map((c) => {
         if (c.id !== activeId) return c;
         const next = { ...c.quantities };
-        if (qty <= 0) delete next[productId];
-        else next[productId] = qty;
+        if (rounded <= 0) delete next[productId];
+        else next[productId] = rounded;
         return { ...c, quantities: next };
       })
     );
@@ -54,6 +60,13 @@ export function SalePos() {
 
   const clear = () =>
     setCarts((prev) => prev.map((c) => (c.id === activeId ? { ...c, quantities: {} } : c)));
+
+  const applyQtyEdit = () => {
+    if (!qtyEdit) return;
+    const parsed = parseFloat(qtyEdit.value);
+    setQty(qtyEdit.product.id, Number.isNaN(parsed) ? 0 : parsed);
+    setQtyEdit(null);
+  };
 
   const MAX_CARTS = 5;
 
@@ -205,14 +218,17 @@ export function SalePos() {
                       </p>
                     </div>
 
-                    {/* Cantidad (solo lectura) */}
-                    <Input
-                      className="pointer-events-none mt-1 h-8 w-full bg-transparent text-center font-semibold disabled:opacity-100"
-                      type="number"
-                      value={qty}
-                      disabled
-                      readOnly
-                    />
+                    {/* Cantidad: botón centrado que abre el modal para editar (decimales).
+                        Va por encima de las zonas; los lados siguen sumando/restando. */}
+                    <div className="pointer-events-none relative z-20 mt-1 flex justify-center">
+                      <button
+                        type="button"
+                        onClick={() => setQtyEdit({ product, value: qty ? String(qty) : "" })}
+                        className="pointer-events-auto h-9 min-w-16 rounded-md border bg-background px-3 text-base font-semibold hover:bg-accent"
+                      >
+                        {qty}
+                      </button>
+                    </div>
 
                     {/* Pistas visuales en los bordes */}
                     <Minus className="pointer-events-none absolute left-1 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/40" />
@@ -317,6 +333,50 @@ export function SalePos() {
               disabled={createSale.isPending}
             >
               {createSale.isPending ? "Cobrando..." : "Sí, cobrar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal para editar la cantidad (acepta decimales / peso) */}
+      <Dialog open={qtyEdit !== null} onOpenChange={(open) => !open && setQtyEdit(null)}>
+        <DialogContent className="sm:max-w-xs">
+          <DialogHeader>
+            <DialogTitle>
+              {qtyEdit?.product.icon} {qtyEdit?.product.name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <label className="text-sm text-muted-foreground">Cantidad</label>
+            <Input
+              type="text"
+              inputMode="decimal"
+              autoFocus
+              value={qtyEdit?.value ?? ""}
+              onChange={(e) => {
+                const raw = e.target.value;
+                if (raw !== "" && !/^\d*\.?\d*$/.test(raw)) return; // números y un punto
+                setQtyEdit((prev) => (prev ? { ...prev, value: raw } : prev));
+              }}
+              onFocus={(e) => e.target.select()}
+              onKeyDown={(e) => e.key === "Enter" && applyQtyEdit()}
+              className="h-11 text-center text-lg font-semibold"
+            />
+            {qtyEdit && parseFloat(qtyEdit.value) > 0 ? (
+              <p className="text-center text-sm text-muted-foreground">
+                Subtotal:{" "}
+                <span className="font-semibold text-foreground">
+                  {formatCurrency(qtyEdit.product.price * parseFloat(qtyEdit.value))}
+                </span>
+              </p>
+            ) : null}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setQtyEdit(null)}>
+              Cancelar
+            </Button>
+            <Button className="bg-green-600 hover:bg-green-700" onClick={applyQtyEdit}>
+              Aceptar
             </Button>
           </DialogFooter>
         </DialogContent>
