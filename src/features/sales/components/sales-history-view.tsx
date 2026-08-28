@@ -50,7 +50,7 @@ export function SalesHistoryView() {
   };
 
   return (
-    <>
+    <div className="flex h-full flex-col">
       <PageHeader
         title="Ventas"
         description="Historial de ventas de mostrador"
@@ -63,7 +63,7 @@ export function SalesHistoryView() {
         }
       />
 
-      <Card className="mb-4 p-4">
+      <Card className="mb-4 shrink-0 p-4">
         <div className="flex flex-wrap items-end gap-3">
           <div className="w-40 space-y-1">
             <Label>Desde</Label>
@@ -80,8 +80,8 @@ export function SalesHistoryView() {
         </div>
       </Card>
 
-      <Card>
-        <Table containerClassName="max-h-[calc(100vh-21rem)]">
+      <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <Table containerClassName="h-full max-h-none">
           <TableHeader>
             <TableRow>
               <TableHead className="w-24"># Venta</TableHead>
@@ -119,7 +119,7 @@ export function SalesHistoryView() {
         </Table>
       </Card>
 
-      <div className="mt-3 flex items-center justify-between text-sm">
+      <div className="mt-3 flex shrink-0 items-center justify-between text-sm">
         <span className="text-muted-foreground">
           {total} venta{total === 1 ? "" : "s"} · Página {page} de {totalPages}
         </span>
@@ -148,6 +148,6 @@ export function SalesHistoryView() {
         open={detail !== null}
         onOpenChange={(open) => !open && setDetail(null)}
       />
-    </>
+    </div>
   );
 }

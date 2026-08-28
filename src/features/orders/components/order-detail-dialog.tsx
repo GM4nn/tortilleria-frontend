@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { useProducts } from "@/features/products/hooks";
 import type { Order } from "../types";
 
 function statusBadge(status: string) {
@@ -35,6 +36,10 @@ export function OrderDetailDialog({
   onOpenChange: (open: boolean) => void;
 }) {
   const fullyPaid = order?.payment_status === "Pagado";
+
+  const { data: products } = useProducts();
+  const iconById = new Map<number, string>();
+  products?.forEach((p) => iconById.set(p.id, p.icon));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -86,29 +91,66 @@ export function OrderDetailDialog({
 
               {/* DERECHA: productos y devoluciones */}
               <div className="space-y-3">
-                <div>
-                  <p className="mb-2 font-semibold">Productos:</p>
-                  <div className="space-y-2">
+                {order.details.length === 1 ? (
+                  /* Un solo producto: ícono + nombre a la izquierda, datos a la derecha */
+                  <div className="flex items-center justify-between gap-4 rounded-lg border p-4">
+                    <div className="flex w-28 shrink-0 flex-col items-center pt-2 text-center">
+                      <span className="text-6xl">
+                        {iconById.get(order.details[0].product_id) ?? "🛒"}
+                      </span>
+                      <p className="mt-3 w-full text-center font-semibold leading-tight">
+                        {order.details[0].product_name}
+                      </p>
+                    </div>
+                    <div className="w-40 shrink-0 space-y-1 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Cantidad</span>
+                        <span className="font-medium tabular-nums">
+                          {order.details[0].quantity}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Precio</span>
+                        <span className="font-medium tabular-nums">
+                          {formatCurrency(order.details[0].unit_price)} c/u
+                        </span>
+                      </div>
+                      <div className="flex justify-between border-t pt-1">
+                        <span className="text-muted-foreground">Total</span>
+                        <span className="text-lg font-bold tabular-nums text-green-600">
+                          {formatCurrency(order.details[0].subtotal)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  /* Cuadrícula grande: ícono enorme centrado por producto */
+                  <div className="grid grid-cols-2 gap-3">
                     {order.details.map((detail) => (
                       <div
                         key={detail.product_id}
-                        className="flex items-center justify-between gap-2 rounded-md border p-2"
+                        className="flex flex-col items-center rounded-lg border p-4 text-center"
                       >
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium leading-tight">
-                            {detail.product_name}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            x{detail.quantity} @ {formatCurrency(detail.unit_price)}
-                          </p>
-                        </div>
-                        <span className="font-medium text-green-600">
-                          {formatCurrency(detail.subtotal)}
+                        <span className="text-6xl leading-none">
+                          {iconById.get(detail.product_id) ?? "🛒"}
                         </span>
+                        <p className="mt-2 font-semibold leading-tight">
+                          {detail.product_name}
+                        </p>
+                        <p className="mt-1 text-sm tabular-nums">
+                          <span className="font-medium">{detail.quantity}</span>
+                          <span className="text-muted-foreground">
+                            {" "}
+                            × {formatCurrency(detail.unit_price)}
+                          </span>
+                        </p>
+                        <p className="mt-2 text-2xl font-bold tabular-nums text-green-600">
+                          {formatCurrency(detail.subtotal)}
+                        </p>
                       </div>
                     ))}
                   </div>
-                </div>
+                )}
 
                 {/* Devoluciones (pérdidas) */}
                 {(order.refunds?.length ?? 0) > 0 ? (

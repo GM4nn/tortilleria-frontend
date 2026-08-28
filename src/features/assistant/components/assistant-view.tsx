@@ -1,14 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { Send } from "lucide-react";
+import { Send, Settings } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Markdown } from "@/components/ui/markdown";
 import { Textarea } from "@/components/ui/textarea";
 import { PageHeader } from "@/components/layout/page-header";
 import { cn } from "@/lib/utils";
-import { useAskAssistant } from "../hooks";
+import { useAskAssistant, useKeyStatus, useSetKey } from "../hooks";
 
 interface Message {
   role: "user" | "assistant";
@@ -23,8 +32,13 @@ const SUGGESTIONS = [
 
 export function AssistantView() {
   const ask = useAskAssistant();
+  const keyStatus = useKeyStatus();
+  const setKey = useSetKey();
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [question, setQuestion] = useState("");
+  const [configOpen, setConfigOpen] = useState(false);
+  const [keyInput, setKeyInput] = useState("");
 
   const send = (text: string) => {
     const trimmed = text.trim();
@@ -37,14 +51,35 @@ export function AssistantView() {
     });
   };
 
+  const saveKey = () => {
+    const trimmed = keyInput.trim();
+    if (!trimmed) return;
+    setKey.mutate(trimmed, {
+      onSuccess: () => {
+        setConfigOpen(false);
+        setKeyInput("");
+      },
+    });
+  };
+
   return (
-    <>
+    <div className="flex h-full flex-col">
       <PageHeader
         title="Asistente IA"
         description="Pregunta sobre tu negocio en lenguaje natural"
+        action={
+          <Button
+            variant="outline"
+            size="icon"
+            title="Configurar API key"
+            onClick={() => setConfigOpen(true)}
+          >
+            <Settings />
+          </Button>
+        }
       />
 
-      <Card className="flex h-[calc(100vh-11rem)] flex-col">
+      <Card className="flex min-h-0 flex-1 flex-col">
         <CardContent className="flex-1 space-y-3 overflow-auto p-4">
           {messages.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
@@ -73,13 +108,17 @@ export function AssistantView() {
               >
                 <div
                   className={cn(
-                    "max-w-[80%] whitespace-pre-wrap rounded-lg px-3 py-2 text-sm",
+                    "max-w-[80%] rounded-lg px-3 py-2 text-sm",
                     message.role === "user"
-                      ? "bg-primary text-primary-foreground"
+                      ? "whitespace-pre-wrap bg-primary text-primary-foreground"
                       : "bg-muted"
                   )}
                 >
-                  {message.text}
+                  {message.role === "assistant" ? (
+                    <Markdown>{message.text}</Markdown>
+                  ) : (
+                    message.text
+                  )}
                 </div>
               </div>
             ))
@@ -116,6 +155,40 @@ export function AssistantView() {
           </Button>
         </div>
       </Card>
-    </>
+
+      {/* Configuración de la API key de Anthropic */}
+      <Dialog open={configOpen} onOpenChange={setConfigOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Configuración del asistente</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">API key de Anthropic</label>
+            <Input
+              type="password"
+              value={keyInput}
+              onChange={(e) => setKeyInput(e.target.value)}
+              placeholder={
+                keyStatus.data?.configured ? "•••••••• (ya configurada)" : "sk-ant-..."
+              }
+              onKeyDown={(e) => e.key === "Enter" && saveKey()}
+            />
+            <p className="text-xs text-muted-foreground">
+              {keyStatus.data?.configured
+                ? "Ya hay una API key configurada. Escribe una nueva para reemplazarla."
+                : "No hay API key configurada. El asistente no funciona sin ella."}
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfigOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={saveKey} disabled={!keyInput.trim() || setKey.isPending}>
+              {setKey.isPending ? "Guardando..." : "Guardar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }

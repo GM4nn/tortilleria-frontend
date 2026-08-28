@@ -112,9 +112,9 @@ export function SalePos() {
   const canCobrar = cartItems.length > 0 && !createSale.isPending;
 
   return (
-    <>
+    <div className="flex h-full flex-col">
       {/* Encabezado con tabs de ventas al lado del título */}
-      <div className="mb-4 flex flex-wrap items-center gap-3">
+      <div className="mb-4 flex shrink-0 flex-wrap items-center gap-3">
         <h1 className="mr-1 text-2xl font-bold tracking-tight">Hacer venta</h1>
 
         {carts.map((c, index) => {
@@ -174,9 +174,9 @@ export function SalePos() {
         </Button>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
+      <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[1fr_360px]">
         {/* Productos */}
-        <Card className="flex h-[calc(100vh-9rem)] flex-col">
+        <Card className="flex h-full min-h-0 flex-col">
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Productos</CardTitle>
           </CardHeader>
@@ -246,7 +246,7 @@ export function SalePos() {
         </Card>
 
         {/* Carrito */}
-        <Card className="flex h-[calc(100vh-9rem)] flex-col">
+        <Card className="flex h-full min-h-0 flex-col">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center justify-center gap-2 text-lg">
               <ShoppingCart className="h-5 w-5" /> Venta{" "}
@@ -381,6 +381,6 @@ export function SalePos() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 }
