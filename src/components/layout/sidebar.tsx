@@ -9,10 +9,8 @@ import {
   LayoutDashboard,
   Package,
   ShoppingCart,
-  Truck,
   Users,
   Wallet,
-  Wheat,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -25,8 +23,6 @@ const NAV_ITEMS = [
   { href: "/products", label: "Productos", icon: Package },
   { href: "/customers", label: "Clientes", icon: Users },
   { href: "/dealers", label: "Repartidores", icon: Bike },
-  { href: "/suppliers", label: "Proveedores", icon: Truck },
-  { href: "/supplies", label: "Insumos", icon: Wheat },
   { href: "/assistant", label: "Asistente IA", icon: Bot },
 ] as const;
 

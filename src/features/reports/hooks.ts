@@ -22,7 +22,3 @@ export function useOrdersBreakdown() {
     queryFn: reportsApi.ordersBreakdown,
   });
 }
-
-export function useFinance() {
-  return useQuery({ queryKey: ["reports", "finance"], queryFn: reportsApi.finance });
-}

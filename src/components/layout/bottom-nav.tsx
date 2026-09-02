@@ -11,10 +11,8 @@ import {
   Package,
   Scale,
   ShoppingCart,
-  Truck,
   Users,
   Wallet,
-  Wheat,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -30,8 +28,6 @@ const NAV_ITEMS = [
   { href: "/products", label: "Productos", icon: Package },
   { href: "/customers", label: "Clientes", icon: Users },
   { href: "/dealers", label: "Repartidores", icon: Bike },
-  { href: "/suppliers", label: "Proveedores", icon: Truck },
-  { href: "/supplies", label: "Insumos", icon: Wheat },
   { href: "/assistant", label: "Asistente", icon: Bot },
 ] as const;
 

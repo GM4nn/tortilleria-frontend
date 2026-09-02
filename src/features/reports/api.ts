@@ -1,6 +1,5 @@
 import { api } from "@/lib/api-client";
 import type {
-  FinanceReport,
   LossesTotal,
   MonthlyIncome,
   OrdersBreakdown,
@@ -12,5 +11,4 @@ export const reportsApi = {
   monthlyIncome: () => api.get<MonthlyIncome>("/reports/monthly-income"),
   lossesTotal: () => api.get<LossesTotal>("/reports/losses-total"),
   ordersBreakdown: () => api.get<OrdersBreakdown>("/reports/orders-breakdown"),
-  finance: () => api.get<FinanceReport>("/reports/finance"),
 };
