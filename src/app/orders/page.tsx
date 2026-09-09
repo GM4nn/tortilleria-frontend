@@ -1,5 +1,5 @@
-import { OrdersHome } from "@/features/orders/components/orders-home";
+import { PedidosHome } from "@/features/orders/components/pedidos-home";
 
 export default function OrdersPage() {
-  return <OrdersHome />;
+  return <PedidosHome />;
 }

@@ -5,6 +5,9 @@ export interface Customer {
   customer_category: string | null;
   customer_photo: string | null;
   customer_phone: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  route_id: number | null;
 }
 
 export interface CustomerInput {
@@ -13,6 +16,9 @@ export interface CustomerInput {
   customer_category?: string | null;
   customer_photo?: string | null;
   customer_phone?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  route_id?: number | null;
 }
 
 export interface Pagination {
