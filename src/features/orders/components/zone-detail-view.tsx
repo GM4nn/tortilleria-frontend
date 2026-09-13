@@ -9,7 +9,9 @@ import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/layout/page-header";
 import { CenteredSpinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
+import { orderByNearest } from "@/lib/route-order";
 import { useCustomers } from "@/features/customers/hooks";
+import { useMeta } from "@/features/meta/hooks";
 import { useRoutes } from "@/features/routes/hooks";
 import { useOrders } from "@/features/orders/hooks";
 import type { Order } from "@/features/orders/types";
@@ -52,6 +54,7 @@ export function ZoneDetailView({ routeId }: { routeId: number | null }) {
   const { data: routes } = useRoutes();
   const { data: customers, isLoading } = useCustomers();
   const { data: schedules } = useSchedules();
+  const { data: meta } = useMeta();
   const { data: ordersPage } = useOrders({ dateFrom: todayIso(), dateTo: todayIso() }, 1, 300);
 
   const [editCustomerId, setEditCustomerId] = useState<number | null>(null);
@@ -60,10 +63,12 @@ export function ZoneDetailView({ routeId }: { routeId: number | null }) {
   const color = route?.color ?? "#8b8b9e";
   const title = route?.name ?? "Sin zona";
 
-  const zoneCustomers = useMemo(
-    () => (customers ?? []).filter((c) => (c.route_id ?? null) === routeId),
-    [customers, routeId]
-  );
+  const zoneCustomers = useMemo(() => {
+    const inZone = (customers ?? []).filter((c) => (c.route_id ?? null) === routeId);
+    // Ordena de más cercano a más lejano empezando desde la tortillería
+    if (!meta) return inZone;
+    return orderByNearest(inZone, meta.shop_lat, meta.shop_lng);
+  }, [customers, routeId, meta]);
 
   const scheduleByCustomer = useMemo(() => {
     const map = new Map<number, ScheduledOrder>();

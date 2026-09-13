@@ -20,7 +20,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { formatCurrency } from "@/lib/utils";
-import { useCustomers } from "@/features/customers/hooks";
+import {
+  useCustomers,
+  useCustomerPrices,
+  useSetCustomerPrice,
+} from "@/features/customers/hooks";
 import { useDealers } from "@/features/dealers/hooks";
 import { useProducts } from "@/features/products/hooks";
 import type { Order } from "@/features/orders/types";
@@ -59,6 +63,30 @@ export function ScheduleFormDialog({
   const [deliveryTime, setDeliveryTime] = useState("");
   const [dealer, setDealer] = useState("");
   const [grid, setGrid] = useState<Grid>({});
+  const [prices, setPrices] = useState<Record<number, string>>({}); // productId -> precio
+
+  const numericCustomerId = customerId ? Number(customerId) : null;
+  const { data: customerPrices } = useCustomerPrices(numericCustomerId);
+  const setCustomerPrice = useSetCustomerPrice(numericCustomerId ?? 0);
+
+  // Carga el precio por cliente de cada producto (custom o precio base del producto)
+  useEffect(() => {
+    if (!open) return;
+    const map: Record<number, string> = {};
+    products.forEach((p) => {
+      const cp = customerPrices?.find((x) => x.product_id === p.id);
+      map[p.id] = cp ? String(cp.custom_price) : String(p.price);
+    });
+    setPrices(map);
+  }, [open, customerId, customerPrices, products]);
+
+  const savePrice = (productId: number, raw: string) => {
+    const price = parseFloat(raw);
+    if (!numericCustomerId || Number.isNaN(price) || price < 0) return;
+    const current = customerPrices?.find((x) => x.product_id === productId)?.custom_price;
+    if (current === price) return; // sin cambios
+    setCustomerPrice.mutate({ productId, price });
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -151,6 +179,25 @@ export function ScheduleFormDialog({
             >
               {formatCurrency(todayOrder.amount_paid)} / {formatCurrency(todayOrder.total)}
             </span>
+            {/* Kilos entregados (y devueltos) reales, según el móvil */}
+            {todayOrder.details.length > 0 ? (
+              <div className="mt-1 w-full text-xs text-muted-foreground">
+                {todayOrder.details.map((d) => {
+                  const ret = (todayOrder.refunds ?? [])
+                    .filter((r) => r.product_id === d.product_id)
+                    .reduce((s, r) => s + r.quantity, 0);
+                  return (
+                    <span key={d.product_id} className="mr-3 whitespace-nowrap">
+                      {d.product_name}:{" "}
+                      <strong className="text-foreground">{d.quantity}</strong> kg
+                      {ret > 0 ? (
+                        <span className="text-amber-600"> (dev. {ret})</span>
+                      ) : null}
+                    </span>
+                  );
+                })}
+              </div>
+            ) : null}
           </div>
         ) : (
           <div className="mb-3 rounded-md border border-dashed p-2 text-xs text-muted-foreground">
@@ -213,6 +260,7 @@ export function ScheduleFormDialog({
                 <thead className="bg-muted/50">
                   <tr>
                     <th className="p-2 text-left font-medium">Producto</th>
+                    <th className="p-2 text-center font-medium">Precio $</th>
                     {WEEKDAYS.map((d) => (
                       <th key={d} className="p-2 text-center font-medium">
                         {d}
@@ -225,6 +273,21 @@ export function ScheduleFormDialog({
                     <tr key={p.id} className="border-t">
                       <td className="whitespace-nowrap p-2 font-medium">
                         {p.icon} {p.name}
+                      </td>
+                      <td className="p-1">
+                        <Input
+                          className="h-9 w-16 text-center font-semibold"
+                          inputMode="decimal"
+                          placeholder={String(p.price)}
+                          value={prices[p.id] ?? ""}
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            if (v !== "" && !/^\d*\.?\d*$/.test(v)) return;
+                            setPrices((pr) => ({ ...pr, [p.id]: v }));
+                          }}
+                          onBlur={(e) => savePrice(p.id, e.target.value)}
+                          disabled={!numericCustomerId}
+                        />
                       </td>
                       {WEEKDAYS.map((_, wd) => (
                         <td key={wd} className="p-1">
@@ -243,7 +306,9 @@ export function ScheduleFormDialog({
               </table>
             </div>
             <p className="text-xs text-muted-foreground">
-              Deja en blanco (o 0) los días sin entrega. El precio se toma del precio del cliente.
+              Deja en blanco (o 0) los días sin entrega. El <strong>precio</strong> es el que
+              se le cobra a este cliente por kilo (se guarda al salir del campo) y se usa al
+              generar el pedido.
             </p>
           </div>
 
