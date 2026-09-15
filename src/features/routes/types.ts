@@ -3,6 +3,7 @@ export interface Route {
   name: string;
   color: string | null;
   dealer_username: string | null;
+  dealers: string[];
   active: boolean;
 }
 
@@ -10,4 +11,5 @@ export interface RouteInput {
   name: string;
   color: string;
   dealer_username: string | null;
+  dealers: string[];
 }

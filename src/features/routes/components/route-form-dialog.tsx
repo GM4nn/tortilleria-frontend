@@ -12,22 +12,14 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useDealers } from "@/features/dealers/hooks";
 import { useSaveRoute } from "../hooks";
 import type { Route } from "../types";
 
 const COLORS = ["#ff4d6d", "#f77f00", "#4cc9f0", "#a78bfa", "#2ecc71", "#f1c40f"];
-const NONE = "__none__";
 
-const EMPTY = { name: "", color: COLORS[0], dealer_username: "" };
+const EMPTY = { name: "", color: COLORS[0], dealers: [] as string[] };
 
 export function RouteFormDialog({
   open,
@@ -49,12 +41,20 @@ export function RouteFormDialog({
           ? {
               name: route.name,
               color: route.color ?? COLORS[0],
-              dealer_username: route.dealer_username ?? "",
+              dealers: route.dealers ?? [],
             }
           : EMPTY
       );
     }
   }, [open, route]);
+
+  const toggleDealer = (username: string) =>
+    setForm((f) => ({
+      ...f,
+      dealers: f.dealers.includes(username)
+        ? f.dealers.filter((d) => d !== username)
+        : [...f.dealers, username],
+    }));
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -64,7 +64,8 @@ export function RouteFormDialog({
         data: {
           name: form.name,
           color: form.color,
-          dealer_username: form.dealer_username || null,
+          dealers: form.dealers,
+          dealer_username: form.dealers[0] ?? null,
         },
       },
       { onSuccess: () => onOpenChange(false) }
@@ -110,25 +111,46 @@ export function RouteFormDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Repartidor asignado</Label>
-            <Select
-              value={form.dealer_username || NONE}
-              onValueChange={(v) =>
-                setForm({ ...form, dealer_username: v === NONE ? "" : v })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Sin asignar" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={NONE}>Sin asignar</SelectItem>
-                {dealers?.map((d) => (
-                  <SelectItem key={d.username} value={d.username}>
-                    {d.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label>Repartidores</Label>
+            <p className="text-xs text-muted-foreground">
+              Puedes asignar varios. Con uno solo, los pedidos se le asignan
+              automáticamente; con varios, quedan sin asignar y cualquiera de la
+              ruta puede tomarlos.
+            </p>
+            <div className="max-h-44 space-y-1 overflow-y-auto rounded-md border p-1">
+              {dealers?.length ? (
+                dealers.map((d) => {
+                  const checked = form.dealers.includes(d.username);
+                  return (
+                    <button
+                      key={d.username}
+                      type="button"
+                      onClick={() => toggleDealer(d.username)}
+                      className={cn(
+                        "flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm transition-colors hover:bg-accent",
+                        checked && "bg-accent"
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "flex h-4 w-4 shrink-0 items-center justify-center rounded border",
+                          checked
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-input"
+                        )}
+                      >
+                        {checked ? "✓" : ""}
+                      </span>
+                      {d.name}
+                    </button>
+                  );
+                })
+              ) : (
+                <p className="px-2 py-1.5 text-sm text-muted-foreground">
+                  No hay repartidores.
+                </p>
+              )}
+            </div>
           </div>
 
           <DialogFooter>

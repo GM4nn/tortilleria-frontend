@@ -103,8 +103,10 @@ export function PedidosHome() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-lg font-semibold">{route.name}</p>
                   <p className="truncate text-sm text-muted-foreground">
-                    {route.dealer_username
-                      ? dealerName.get(route.dealer_username) ?? route.dealer_username
+                    {route.dealers?.length
+                      ? route.dealers
+                          .map((u) => dealerName.get(u) ?? u)
+                          .join(", ")
                       : "Sin repartidor"}
                   </p>
                 </div>
