@@ -13,10 +13,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { useMeta } from "@/features/meta/hooks";
-import { useSaveProduct } from "../hooks";
+import { useSaveProduct, useUpdateOrderPrice } from "../hooks";
 import type { Product } from "../types";
 
-const EMPTY = { icon: "🍴", name: "", price: "" };
+const EMPTY = { icon: "🍴", name: "", price: "", orderPrice: "" };
 
 export function ProductFormDialog({
   open,
@@ -29,13 +29,19 @@ export function ProductFormDialog({
 }) {
   const [form, setForm] = useState(EMPTY);
   const save = useSaveProduct();
+  const updateOrderPrice = useUpdateOrderPrice();
   const { data: meta } = useMeta();
 
   useEffect(() => {
     if (open) {
       setForm(
         product
-          ? { icon: product.icon, name: product.name, price: String(product.price) }
+          ? {
+              icon: product.icon,
+              name: product.name,
+              price: String(product.price),
+              orderPrice: String(product.price),
+            }
           : EMPTY
       );
     }
@@ -43,12 +49,26 @@ export function ProductFormDialog({
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
+    const newPrice = Number(form.price);
+    const newOrderPrice = Number(form.orderPrice);
+
     save.mutate(
       {
         id: product?.id,
-        data: { icon: form.icon, name: form.name, price: Number(form.price) },
+        data: { icon: form.icon, name: form.name, price: newPrice },
       },
-      { onSuccess: () => onOpenChange(false) }
+      {
+        onSuccess: () => {
+          if (product?.id && newOrderPrice > 0) {
+            updateOrderPrice.mutate(
+              { id: product.id, price: newOrderPrice },
+              { onSuccess: () => onOpenChange(false) }
+            );
+          } else {
+            onOpenChange(false);
+          }
+        },
+      }
     );
   };
 
@@ -61,7 +81,7 @@ export function ProductFormDialog({
 
         <form onSubmit={handleSubmit} className="min-w-0 space-y-4">
           <div className="flex gap-4">
-            {/* IZQUIERDA: nombre + precio apilados */}
+            {/* IZQUIERDA: nombre + precio + precio pedidos apilados */}
             <div className="flex min-w-0 flex-1 flex-col gap-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Nombre</Label>
@@ -86,6 +106,23 @@ export function ProductFormDialog({
                   required
                 />
               </div>
+              {product && (
+                <div className="space-y-2">
+                  <Label htmlFor="orderPrice">Precio pedidos</Label>
+                  <Input
+                    id="orderPrice"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    className="w-full min-w-0"
+                    value={form.orderPrice}
+                    onChange={(e) => setForm({ ...form, orderPrice: e.target.value })}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Se aplica a todos los clientes en sus pedidos programados.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* DERECHA: selector de icono, exactamente a la altura de nombre + precio */}

@@ -6,5 +6,10 @@ export const productsApi = {
   create: (data: ProductInput) => api.post<Product>("/products", data),
   update: (id: number, data: ProductInput) =>
     api.put<Product>(`/products/${id}`, data),
+  updateOrderPrice: (id: number, price: number) =>
+    api.put<{ updated: number; created: number; total: number }>(
+      `/products/${id}/order-price`,
+      { price }
+    ),
   remove: (id: number) => api.del<void>(`/products/${id}`),
 };

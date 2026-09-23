@@ -39,3 +39,17 @@ export function useDeleteProduct() {
       toast.error(error instanceof ApiError ? error.message : "Error al eliminar"),
   });
 }
+
+export function useUpdateOrderPrice() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, price }: { id: number; price: number }) =>
+      productsApi.updateOrderPrice(id, price),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      toast.success(`Precio de pedidos actualizado para ${data.total} clientes`);
+    },
+    onError: (error) =>
+      toast.error(error instanceof ApiError ? error.message : "Error al actualizar precio"),
+  });
+}
