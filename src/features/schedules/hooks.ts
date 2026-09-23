@@ -43,7 +43,11 @@ export function useDeleteSchedule() {
 export function useGenerateToday() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () => schedulesApi.generateToday(),
+    mutationFn: async () => {
+      const result = await schedulesApi.generateToday();
+      await schedulesApi.syncToday();
+      return result;
+    },
     onSuccess: (r) => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       toast.success(`Pedidos generados: ${r.created} (omitidos: ${r.skipped})`);

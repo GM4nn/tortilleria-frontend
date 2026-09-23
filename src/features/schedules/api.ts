@@ -12,4 +12,8 @@ export const schedulesApi = {
     api.post<{ created: number; skipped: number; weekday: number }>(
       "/scheduled-orders/generate-today"
     ),
+  syncToday: () =>
+    api.post<{ synced: number; errors: number; total: number }>(
+      "/scheduled-orders/sync-today"
+    ),
 };
