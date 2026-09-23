@@ -69,13 +69,19 @@ export function ScheduleFormDialog({
   const { data: customerPrices } = useCustomerPrices(numericCustomerId);
   const setCustomerPrice = useSetCustomerPrice(numericCustomerId ?? 0);
 
-  // Carga el precio por cliente de cada producto (custom o precio base del producto)
+  // Carga el precio: custom del cliente > order_price del producto > precio base
   useEffect(() => {
     if (!open) return;
     const map: Record<number, string> = {};
     products.forEach((p) => {
       const cp = customerPrices?.find((x) => x.product_id === p.id);
-      map[p.id] = cp ? String(cp.custom_price) : String(p.price);
+      if (cp) {
+        map[p.id] = String(cp.custom_price);
+      } else if (p.order_price != null) {
+        map[p.id] = String(p.order_price);
+      } else {
+        map[p.id] = String(p.price);
+      }
     });
     setPrices(map);
   }, [open, customerId, customerPrices, products]);

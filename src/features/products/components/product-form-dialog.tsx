@@ -40,7 +40,7 @@ export function ProductFormDialog({
               icon: product.icon,
               name: product.name,
               price: String(product.price),
-              orderPrice: String(product.price),
+              orderPrice: String(product.order_price ?? product.price),
             }
           : EMPTY
       );
